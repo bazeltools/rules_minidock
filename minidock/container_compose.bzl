@@ -5,9 +5,12 @@ def __copy_provider_with(current, parent):
     if parent == None:
         return current
     else:
+        base_lst = [parent]
+        base_lst.extend(parent.parent_info)
+
         return struct(
             layer_data = current.layer_data,
-            parent_info = depset([parent], transitive = [parent.parent_info]),
+            parent_info = base_lst,
             remote_metadata = current.remote_metadata,
             dependencies = depset(transitive = [current.dependencies, parent.dependencies]),
             config = current.config,

@@ -107,7 +107,7 @@ def __container_data_impl(
     )
     return [
         ContainerInfo(
-        parent_info = depset(),
+        parent_info = [],
         remote_metadata = None,
         dependencies = depset([layer]),
         layer_data = layer,

@@ -13,7 +13,8 @@ ContainerInfo = provider(fields = [
 
 def container_info_struct(container_info):
     # Linearize
-    infos = depset([container_info], transitive = [container_info.parent_info]).to_list()
+    infos = [container_info]
+    infos.extend(container_info.parent_info)
     remote_info = None
     for info in infos:
         if remote_info != None:

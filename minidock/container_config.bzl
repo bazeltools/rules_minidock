@@ -15,7 +15,7 @@ def __container_config__impl(ctx):
     layer_config = struct(
         architecture = architecture,
         config = struct(
-            entry_point = ctx.attr.entrypoint,
+            entrypoint = ctx.attr.entrypoint,
             cmd = ctx.attr.cmd,
             env = __expand_env(ctx, ctx.attr.env),
             user = ctx.attr.user,
@@ -25,7 +25,7 @@ def __container_config__impl(ctx):
 
     return [
         ContainerInfo(
-            parent_info = depset(),
+            parent_info = [],
             remote_metadata = None,
             dependencies = depset(),
             layer_data = None,

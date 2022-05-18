@@ -11,7 +11,7 @@ def __external_metadata_impl(ctx):
             repository = ctx.attr.repository,
             digest = ctx.attr.digest,
         ),
-        parent_info = depset(),
+        parent_info = [],
         config = None,
         layer_data = None,
         dependencies = depset(ctx.files.manifest + ctx.files.config),

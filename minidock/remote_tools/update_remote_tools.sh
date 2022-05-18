@@ -71,8 +71,8 @@ EOM
 
 
 for tool in $TOOLS; do
-    for platform in $PLATFORM_OS; do
-        load_entry $tool $platform
+    for PLATFORM in $PLATFORM_OS; do
+        load_entry $tool $PLATFORM
     done
 done
 
@@ -84,8 +84,8 @@ cat << EOM >>$TMP_OUTPUT
 EOM
 # Puller app
 TOOL="puller-app"
-for platform in $PLATFORM_OS; do
-    key="$(echo $platform | sed 's/-/__/g')"
+for PLATFORM in $PLATFORM_OS; do
+    key="$(echo $PLATFORM | sed 's/-/__/g')"
     binary_name="$TOOL-$PLATFORM"
     SHA256_VALUE="$(curl --fail -L "${URL_BASE}/${binary_name}.sha256")"
     set -x
