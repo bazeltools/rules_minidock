@@ -1,3 +1,6 @@
+load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo")
+
+
 def __copy_provider_with(current, parent):
     if parent == None:
         return current
@@ -31,8 +34,9 @@ def __align_parents(upstream, layers):
 def __container_compose_impl(
         ctx):
     layers = [provider[ContainerInfo] for provider in ctx.attr.layers]
+    base_info = ctx.attr.base[ContainerInfo] if ctx.attr.base != None else None
     return [
-        __align_parents(ctx.attr.base[ContainerInfo], layers),
+        __align_parents(base_info, layers),
     ]
 
 container_compose = rule(

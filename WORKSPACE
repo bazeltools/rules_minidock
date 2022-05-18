@@ -6,3 +6,10 @@ load(
     "git_repository",
     "new_git_repository",
 )
+
+load(
+    "//minidock/remote_tools:repositories.bzl",
+    "load_tools",
+)
+
+load_tools()

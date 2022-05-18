@@ -1,0 +1,9 @@
+
+load(
+    "@com_github_bazeltools_rules_minidock//minidock/remote_tools:wrap_executable.bzl",
+    "wrap_executable",
+)
+
+wrap_executable(name = "pusher", executable_path = "pusher-app",     visibility = ["//visibility:public"],
+)
+

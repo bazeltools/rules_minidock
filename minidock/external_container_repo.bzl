@@ -1,23 +1,37 @@
 def ___external_container_repo(repository_ctx):
-    fetch_args = ctx.actions.args()
+    # Repository rules don't seem to still be able to use aliases and constraints ?
+
+    # os_name = repository_ctx.os.name
+
+    # metadata_fetch = None
+    # if (os_name.startswith("mac os")):
+    #     metadata_fetch = "@rules_minidock_tools_metadata_fetch_darwin_arm64//:bin"
+
+    # if metadata_fetch == None:
+    #     fail("Unable to find metadata fetch for platform : %s " % os_name)
+    #     # ":linux_x86": "@rules_minidock_tools_metadata_fetch_x86//:bin",
+
 
     digest = repository_ctx.attr.digest
 
     if not digest.startswith("sha256:"):
         fail("Invalid digest value, should start with sha256, as it is the only supported digest today but is a required prefix")
 
-    fetch_args.add(repository_ctx.path(repository_ctx.attr.metadata_fetch))
-    fetch_args.add("--registry").add(repository_ctx.attr.registry)
-    fetch_args.add("--repository").add(repository_ctx.attr.repository)
-    fetch_args.add("--digest").add(repository_ctx.attr.digest)
+    fetch_args = []
+    fetch_args.append(repository_ctx.path(repository_ctx.attr.puller))
+    fetch_args.append("--registry")
+    fetch_args.append(repository_ctx.attr.registry)
+    fetch_args.append("--repository")
+    fetch_args.append(repository_ctx.attr.repository)
+    fetch_args.append("--digest")
+    fetch_args.append(repository_ctx.attr.digest)
 
     result = repository_ctx.execute(fetch_args)
     if result.return_code:
-        fail("Failed to fetch metadata: %s (%s)" % (result.stderr, fetch_args))
+        fail("Failed to fetch metadata: %s\nSTDOUT: %s\nSTDERR: %s" % (fetch_args, result.stdout,result.stderr))
 
     repository_ctx.file("BUILD", """package(default_visibility = ["//visibility:public"])
 load("@com_github_bazeltools_rules_minidock//minidock/internal:external_metadata.bzl", "external_metadata")
-
 external_metadata(
     name = "metadata",
     config = "config.json",
@@ -38,11 +52,10 @@ external_container_repo = repository_rule(
         "digest": attr.string(
             doc = "Digest of the container image.",
         ),
-        "metadata_fetch": attr.label(
-            executable = True,
-            default = Label("@//minidock:metadata_fetch"),
+        "puller": attr.label(
             cfg = "host",
-            doc = "Fetch engine to fetch metadata",
+            default = "@rules_minidock__puller_app//:exe",
+            doc = "Override generated based on settings option to fetch metadata",
         ),
         "registry": attr.string(
             mandatory = True,

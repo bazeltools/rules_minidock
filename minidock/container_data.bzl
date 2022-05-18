@@ -1,5 +1,57 @@
 load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo")
 
+# Probably should nuke these/include them in whatever app produces the tar ball? -- these are from rules_docker
+def _join_path(directory, path):
+    if not path:
+        return directory
+    if path[0] == "/":
+        return path[1:]
+    if directory == "/":
+        return path
+    return directory + "/" + path
+
+def dirname(path):
+    """Returns the directory's name.
+
+    Args:
+      path: The path to return the directory for
+
+    Returns:
+      The directory's name.
+    """
+    last_sep = path.rfind("/")
+    if last_sep == -1:
+        return ""
+    return path[:last_sep]
+
+
+def _canonicalize_path(path):
+    if not path:
+        return path
+
+    # Strip ./ from the beginning if specified.
+    # There is no way to handle .// correctly (no function that would make
+    # that possible and Starlark is not turing complete) so just consider it
+    # as an absolute path. A path of / should preserve the entire
+    # path up to the repository root.
+
+    if path == "/":
+        return path
+    if len(path) >= 2 and path[0:2] == "./":
+        path = path[2:]
+    if not path or path == ".":  # Relative to current package
+        return ""
+    elif path[0] == "/":  # Absolute path
+        return path
+    else:  # Relative to a sub-directory
+        return path
+
+
+def strip_prefix(path, prefix):
+    if path.startswith(prefix):
+        return path[len(prefix):]
+    return path
+
 # This is currently whats used in rules_docker, evaluate if we should change it?
 # We have no legacy needs to support.
 def _magic_path(ctx, f, output_layer):
@@ -25,7 +77,7 @@ def _magic_path(ctx, f, output_layer):
 
 def __container_data_impl(
         ctx):
-    layer = ctx.actions.declare_file("%s.tgz" % ctx.name)
+    layer = ctx.actions.declare_file("%s.tgz" % ctx.attr.name)
 
     files = ctx.files.files
     args = ctx.actions.args()
@@ -41,7 +93,7 @@ def __container_data_impl(
         empty_dirs = ctx.attr.empty_dirs or [],
         tars = [f.path for f in ctx.files.tars],
     )
-    manifest_file = ctx.actions.declare_file(name + "-layer.manifest")
+    manifest_file = ctx.actions.declare_file(ctx.attr.name + "-layer.manifest")
     ctx.actions.write(manifest_file, manifest.to_json())
     args.add(manifest_file, format = "--manifest=%s")
 
@@ -53,18 +105,23 @@ def __container_data_impl(
         use_default_shell_env = True,
         mnemonic = "ContainerData",
     )
-    return [ContainerInfo(
+    return [
+        ContainerInfo(
         parent_info = depset(),
         remote_metadata = None,
         dependencies = depset([layer]),
         layer_data = layer,
         config = None,
-    )]
+    ),
+     DefaultInfo(
+            files = depset([layer]),
+        ),
+    ]
 
-container_layer = rule(
+container_data = rule(
     attrs = {
         "_build_tar": attr.label(
-            default = Label("@//minidock/container_data_tools:build_tar"),
+            default = Label("//minidock/container_data_tools:build_tar"),
             cfg = "host",
             executable = True,
         ),

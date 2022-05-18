@@ -1,18 +1,12 @@
 load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "container_info_struct")
-load("@io_bazel_rules_docker//container:providers.bzl", "PushInfo", "STAMP_ATTR", "StampSettingInfo")
-load(
-    "//skylib:path.bzl",
-    "runfile",
-)
+
 
 launcher_template = """
 #!/bin/bash
 
 set -euo pipefail
 
-export INVOKE_ROOT="\\$PWD"
-
-exec {tool} {config_file_path} "\\$@"
+exec {tool} --pusher-config {config_file_path} --cache-path {local_cache_path} "$@"
 """
 
 def __container_push_impl(ctx):
@@ -32,46 +26,46 @@ def __container_push_impl(ctx):
     merger_args.add("--directory-output-short-path").add(configured_data.short_path)
 
     ctx.actions.run(
-        inputs = depset(merger_input, transitive = []),
+        inputs = depset(merger_input, transitive = [composed_transitive_deps]),
         outputs = [configured_data],
         arguments = [merger_args],
-        executable = ctx.executable._merger,
+        executable = ctx.executable.merger,
     )
 
     registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
     repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
-    tag = ctx.expand_make_variables("tag", ctx.attr.tag, {})
-    tag_file = None
+    container_tags = ctx.attr.container_tags
+    container_tag_file = None
     pusher_input = []
 
     # If a tag file is provided, override <tag> with tag value
-    if ctx.file.tag_file:
-        tag = None
-        tag_file = ctx.file.tag_file.short_path
-        pusher_input.append(ctx.file.tag_file)
+    if ctx.file.container_tag_file:
+        container_tag_file = ctx.file.container_tag_file.short_path
+        pusher_input.append(ctx.file.container_tag_file)
 
     pusher_config = struct(
         merger_data = configured_data.short_path,
         registry = registry,
         repository = repository,
-        tag = tag,
-        tag_file = tag_file,
+        container_tags = container_tags,
+        container_tag_file = container_tag_file,
     )
 
     pusher_config_file = ctx.actions.declare_file("%s_pusher_config.json" % ctx.attr.name)
     ctx.actions.write(pusher_config_file, json.encode(pusher_config))
 
-    pusher_runfiles = [ctx.executable._pusher, configured_data] + merger_input + pusher_input
+    pusher_runfiles = [ctx.executable.pusher, pusher_config_file, configured_data] + merger_input + pusher_input
     runfiles = ctx.runfiles(files = pusher_runfiles, transitive_files = composed_transitive_deps)
-    runfiles = runfiles.merge(ctx.attr._pusher[DefaultInfo].default_runfiles)
+    runfiles = runfiles.merge(ctx.attr.pusher[DefaultInfo].default_runfiles)
 
     exe = ctx.actions.declare_file(ctx.label.name)
 
     ctx.actions.write(
         exe,
         launcher_template.format(
-            tool = ctx.executable._pusher.short_path,
+            tool = ctx.executable.pusher.short_path,
             config_file_path = pusher_config_file.short_path,
+            local_cache_path = ctx.attr.local_cache_path
         ),
         is_executable = True,
     )
@@ -83,7 +77,7 @@ def __container_push_impl(ctx):
     ]
 
 container_push = rule(
-    attrs = dicts.add({
+    attrs = {
         "composed": attr.label(
             providers = [ContainerInfo],
             mandatory = True,
@@ -97,27 +91,30 @@ container_push = rule(
             mandatory = True,
             doc = "The name of the image.",
         ),
-        "stamp": STAMP_ATTR,
-        "tag": attr.string(
-            default = "latest",
-            doc = "The tag of the image.",
+        "container_tags": attr.string_list(
+            default = ["latest"],
+            doc = "The tags to push for the image the image.",
         ),
-        "tag_file": attr.label(
+        "container_tag_file": attr.label(
             allow_single_file = True,
-            doc = "The label of the file with tag value. Overrides 'tag'.",
+            doc = "The label of the file with tag values, added to tag. Can use multiple tags separated by , or whitespace",
         ),
-        "_pusher": attr.label(
-            default = "//container/go/cmd/pusher",
+        "pusher": attr.label(
+            default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:pusher_app",
             cfg = "host",
             executable = True,
             allow_files = True,
         ),
-        "_merger": attr.label(
-            default = "//container:merger",
+        "merger": attr.label(
+            default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:merge_app",
             cfg = "host",
             executable = True,
         ),
-    }),
+        "local_cache_path": attr.string(
+            default = "/tmp/bzl_docker_cache",
+            doc = "Local cache location",
+        ),
+    },
     executable = True,
     implementation = __container_push_impl,
 )

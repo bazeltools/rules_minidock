@@ -13,6 +13,7 @@ def __external_metadata_impl(ctx):
         ),
         parent_info = depset(),
         config = None,
+        layer_data = None,
         dependencies = depset(ctx.files.manifest + ctx.files.config),
     )
     return [
@@ -27,6 +28,5 @@ external_metadata = rule(
         "config": attr.label(allow_files = [".json"]),
         "manifest": attr.label(allow_files = [".json"], mandatory = True),
     },
-    toolchains = ["@io_bazel_rules_docker//toolchains/docker:toolchain_type"],
     implementation = __external_metadata_impl,
 )

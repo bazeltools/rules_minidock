@@ -1,0 +1,23 @@
+workspace(name = "test_workspace")
+
+local_repository(name = "com_github_bazeltools_rules_minidock", path="../../")
+
+
+load(
+    "@com_github_bazeltools_rules_minidock//minidock/remote_tools:repositories.bzl",
+    "load_tools",
+)
+
+load_tools()
+
+load(
+    "@com_github_bazeltools_rules_minidock//minidock:external_container_repo.bzl",
+    "external_container_repo"
+)
+
+external_container_repo(
+    name = "bazel_320",
+    digest = "sha256:08434856d8196632b936dd082b8e03bae0b41346299aedf60a0d481ab427a69f",
+    registry = "l.gcr.io",
+    repository = "google/bazel",
+)

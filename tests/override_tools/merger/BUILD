@@ -1,0 +1,7 @@
+load(
+    "@com_github_bazeltools_rules_minidock//minidock/remote_tools:wrap_executable.bzl",
+    "wrap_executable",
+)
+
+wrap_executable(name = "merger", executable_path = "merger-app",     visibility = ["//visibility:public"],
+)

@@ -13,12 +13,12 @@ ContainerInfo = provider(fields = [
 
 def container_info_struct(container_info):
     # Linearize
-    infos = depset([container_info], transitive = [container_info.next_layer]).to_list()
+    infos = depset([container_info], transitive = [container_info.parent_info]).to_list()
     remote_info = None
-    for info in remote_info:
-        if remote_info is not None:
+    for info in infos:
+        if remote_info != None:
             break
-        elif info.remote_metadata is not None:
+        elif info.remote_metadata != None:
             remote_info = struct(
                 config = struct(
                     path = info.remote_metadata.config.path,
@@ -28,26 +28,33 @@ def container_info_struct(container_info):
                     path = info.remote_metadata.manifest.path,
                     short_path = info.remote_metadata.manifest.short_path,
                 ),
-                remote_fetch_config = info.remote_metadata.remote_fetch_config,
+                 registry = info.remote_metadata.registry,
+            repository = info.remote_metadata.repository,
+            digest = info.remote_metadata.digest,
             )
             break
 
     result = []
 
     for info in infos:
-        if info.remote_layer != None:
+        if info.remote_metadata != None:
             pass
         if info.layer_data != None:
-            result.append(struct(
+            result.append(
+                struct(
+                    data = struct(
                 path = info.layer_data.path,
                 short_path = info.layer_data.short_path,
-            ))
+            )))
             continue
         if info.config != None:
             result.append(struct(
                 config = info.config,
             ))
             continue
+        if info.remote_metadata != None:
+            continue
+
         fail("Do not know how to process container info for: %s " % info)
 
     return struct(
