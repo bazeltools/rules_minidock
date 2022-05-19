@@ -48,6 +48,7 @@ def __container_push_impl(ctx):
         registry = registry,
         repository = repository,
         container_tags = container_tags,
+        registry_type = ctx.attr.registry_format,
         container_tag_file = container_tag_file,
     )
 
@@ -82,6 +83,14 @@ container_push = rule(
             providers = [ContainerInfo],
             mandatory = True,
             doc = "The label of the image to push.",
+        ),
+        "registry_format": attr.string(
+            mandatory = True,
+            values = [
+                "OCI",
+                "Docker",
+            ],
+            doc = "The form to push: Docker or OCI, default to 'Docker'.",
         ),
         "registry": attr.string(
             mandatory = True,
