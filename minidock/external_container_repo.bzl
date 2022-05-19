@@ -25,6 +25,9 @@ def ___external_container_repo(repository_ctx):
     fetch_args.append(repository_ctx.attr.repository)
     fetch_args.append("--digest")
     fetch_args.append(repository_ctx.attr.digest)
+    fetch_args.append("--architecture")
+    fetch_args.append(repository_ctx.attr.architecture)
+
 
     result = repository_ctx.execute(fetch_args)
     if result.return_code:
@@ -63,6 +66,11 @@ external_container_repo = repository_rule(
         "repository": attr.string(
             mandatory = True,
             doc = "The name of the image.",
+        ),
+         "architecture": attr.string(
+            mandatory = False,
+            default = "amd64"
+            doc = "Architecture.",
         ),
     },
     implementation = ___external_container_repo,
