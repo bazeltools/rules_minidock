@@ -13,7 +13,6 @@ def __expand_env(ctx, env):
 
 def __container_config__impl(ctx):
     layer_config = struct(
-        architecture = architecture,
         config = struct(
             entrypoint = ctx.attr.entrypoint,
             cmd = ctx.attr.cmd,
