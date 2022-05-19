@@ -71,7 +71,7 @@ def __container_push_impl(ctx):
             tool = ctx.executable.pusher.short_path,
             config_file_path = pusher_config_file.short_path,
             local_cache_path = ctx.attr.local_cache_path,
-            pusher_verbose = verbose_str
+            verbose_str = verbose_str
         ),
         is_executable = True,
     )
