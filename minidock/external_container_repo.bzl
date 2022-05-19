@@ -69,7 +69,7 @@ external_container_repo = repository_rule(
         ),
          "architecture": attr.string(
             mandatory = False,
-            default = "amd64"
+            default = "amd64",
             doc = "Architecture.",
         ),
     },
