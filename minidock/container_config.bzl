@@ -14,11 +14,11 @@ def __expand_env(ctx, env):
 def __container_config__impl(ctx):
     layer_config = struct(
         config = struct(
-            entrypoint = ctx.attr.entrypoint,
-            cmd = ctx.attr.cmd,
-            env = __expand_env(ctx, ctx.attr.env),
-            user = ctx.attr.user,
-            workdir = ctx.attr.workdir,
+            Entrypoint = ctx.attr.entrypoint,
+            Cmd = ctx.attr.cmd,
+            Env = __expand_env(ctx, ctx.attr.env),
+            User = ctx.attr.user,
+            WorkingDir = ctx.attr.workdir,
         ),
     )
 
@@ -54,12 +54,9 @@ container_config = rule(
         This field supports stamp variables.""",
             mandatory = False,
         ),
-        "layers": attr.label_list(
-            doc = """List of `container_layer` targets.
-
-        The data from each `container_layer` will be part of container image,
-        and the environment variable will be available in the image as well.""",
-            providers = [LayerInfo],
+        "env": attr.string_dict(
+            doc = """Environmental variables to set""",
+            mandatory = False,
         ),
         "user": attr.string(
             doc = """The user that the image should run as.
