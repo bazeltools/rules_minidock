@@ -6,7 +6,7 @@ launcher_template = """
 
 set -euo pipefail
 
-exec {tool} --pusher-config {config_file_path} --cache-path {local_cache_path} "$@"
+exec {tool} --pusher-config {config_file_path} --cache-path {local_cache_path} {verbose_str} "$@"
 """
 
 def __container_push_impl(ctx):
@@ -61,12 +61,17 @@ def __container_push_impl(ctx):
 
     exe = ctx.actions.declare_file(ctx.label.name)
 
+    verbose_str = ""
+    if ctx.attr.pusher_verbose:
+        verbose_str = "--verbose"
+
     ctx.actions.write(
         exe,
         launcher_template.format(
             tool = ctx.executable.pusher.short_path,
             config_file_path = pusher_config_file.short_path,
-            local_cache_path = ctx.attr.local_cache_path
+            local_cache_path = ctx.attr.local_cache_path,
+            pusher_verbose = verbose_str
         ),
         is_executable = True,
     )
@@ -113,6 +118,9 @@ container_push = rule(
             cfg = "host",
             executable = True,
             allow_files = True,
+        ),
+        "pusher_verbose": attr.bool(
+            default = False,
         ),
         "merger": attr.label(
             default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:merge_app",
