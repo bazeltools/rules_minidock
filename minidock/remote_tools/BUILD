@@ -34,7 +34,7 @@ alias(
     actual = select({
         ":macos_x86": "@rules_minidock__merge_app_macos_x86_64//:bin",
         ":macos_arm64": "@rules_minidock__merge_app_macos_aarch64//:bin",
-        ":linux_x86": "@rules_minidock__merge_app_linux_aarch64//:bin",
+        ":linux_x86": "@rules_minidock__merge_app_linux_x86_64//:bin",
     }),
     visibility = ["//visibility:public"],
 )
@@ -45,7 +45,7 @@ alias(
     actual = select({
         ":macos_x86": "@rules_minidock__pusher_app_macos_x86_64//:bin",
         ":macos_arm64": "@rules_minidock__pusher_app_macos_aarch64//:bin",
-        ":linux_x86": "@rules_minidock__pusher_app_linux_aarch64//:bin",
+        ":linux_x86": "@rules_minidock__pusher_app_linux_x86_64//:bin",
     }),
     visibility = ["//visibility:public"],
 )
