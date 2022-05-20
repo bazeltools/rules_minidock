@@ -45,6 +45,7 @@ class TarFileWriter(object):
   def __init__(self,
                name,
                compression='',
+               gzip_compression_level=9,
                root_directory='./',
                default_mtime=None,
                preserve_tar_mtimes=True):
@@ -80,7 +81,7 @@ class TarFileWriter(object):
       # The Tarfile class doesn't allow us to specify gzip's mtime attribute.
       # Instead, we manually re-implement gzopen from tarfile.py and set mtime.
       self.fileobj = gzip.GzipFile(
-          filename=name, mode='w', compresslevel=9, mtime=self.default_mtime)
+          filename=name, mode='w', compresslevel=gzip_compression_level, mtime=self.default_mtime)
     self.tar = tarfile.open(
       name=name,
       mode=mode,
@@ -409,10 +410,11 @@ class TarFile(object):
 
   def __init__(self, output, directory, root_directory,
                default_mtime, enable_mtime_preservation,
-               force_posixpath):
+               force_posixpath, gzip_compression_level):
     self.directory = directory
     self.output = output
     self.compression = "gz"
+    self.gzip_compression_level = gzip_compression_level
     self.root_directory = root_directory
     self.default_mtime = default_mtime
     self.enable_mtime_preservation = enable_mtime_preservation
@@ -422,6 +424,7 @@ class TarFile(object):
     self.tarfile = TarFileWriter(
         self.output,
         self.compression,
+        self.gzip_compression_level,
         self.root_directory,
         self.default_mtime,
         self.enable_mtime_preservation,
@@ -675,7 +678,7 @@ def main(FLAGS):
   with TarFile(FLAGS.output, FLAGS.directory,
                FLAGS.root_directory, FLAGS.mtime,
                FLAGS.enable_mtime_preservation,
-               FLAGS.force_posixpath) as output:
+               FLAGS.force_posixpath, FLAGS.gzip_compression_level) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
@@ -781,6 +784,10 @@ if __name__ == '__main__':
   parser.add_argument('--force_posixpath', type=bool, default=False,
     help='Force the use of posixpath when normalizing file paths. This is useful'
     'when building in a non-posix environment.')
+
+
+  parser.add_argument('--gzip_compression_level', type=int, default=9,
+    help='Set the gzip compression level to use.')
 
   main(parser.parse_args())
 

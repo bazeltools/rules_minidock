@@ -96,6 +96,7 @@ def __container_data_impl(
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-layer.manifest")
     ctx.actions.write(manifest_file, manifest.to_json())
     args.add(manifest_file, format = "--manifest=%s")
+    args.add(ctx.attr.gzip_compression_level, format = "--gzip_compression_level=%s")
 
     ctx.actions.run(
         executable = ctx.executable._build_tar,
@@ -146,6 +147,10 @@ container_data = rule(
         ),
         "empty_dirs": attr.string_list(),
         "empty_files": attr.string_list(),
+        "gzip_compression_level": attr.int(
+            default=9,
+            doc = "The gzip compression level to use when making .tar.gz outputs, use low effort for already compressed things like jars"
+        ),
         "files": attr.label_list(
             allow_files = True,
             doc = """File to add to the layer.
