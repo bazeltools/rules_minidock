@@ -6,6 +6,7 @@ def __copy_provider_with(current, parent):
         return current
     else:
         base_lst = [parent]
+        base_lst.extend(current.parent_info)
         base_lst.extend(parent.parent_info)
 
         return struct(
