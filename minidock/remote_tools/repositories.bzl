@@ -9,19 +9,19 @@ def load_tools():
     if "rules_minidock__merge_app_linux_x86_64" not in excludes:
         load_tool(
             name = "rules_minidock__merge_app_linux_x86_64",
-            sha256 = "d8c64b1226373e7d825f7594c6a8326576b45df0c828b26db63262ffe9a74eee",
+            sha256 = "64bb4f9363591316b66c74c6d049997e6458a37fca05eaa7ce227a474ff85fdc",
             packaged = False,
             binary_path = "merge-app-linux-x86_64",
-            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/merge-app-linux-x86_64"],
+            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/merge-app-linux-x86_64"],
         )
 
     if "rules_minidock__merge_app_macos_x86_64" not in excludes:
         load_tool(
             name = "rules_minidock__merge_app_macos_x86_64",
-            sha256 = "e615b4579c7d42a610de45a2773e37bd4f8c747afa7bb85a2154e1f6f255bb82",
+            sha256 = "7631033e88052aef97d0fa4dd4d83b2f2530c5e098695893ecf1451475d5c5da",
             packaged = False,
             binary_path = "merge-app-macos-x86_64",
-            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/merge-app-macos-x86_64"],
+            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/merge-app-macos-x86_64"],
         )
 
     if "rules_minidock__merge_app_macos_aarch64" not in excludes:
@@ -30,42 +30,42 @@ def load_tools():
             sha256 = "ba39f8b81ccae7981f1ded1325403509e430094104c98174cfc2c04bc2bdabec",
             packaged = False,
             binary_path = "merge-app-macos-aarch64",
-            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/merge-app-macos-aarch64"],
+            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/merge-app-macos-aarch64"],
         )
 
     if "rules_minidock__pusher_app_linux_x86_64" not in excludes:
         load_tool(
             name = "rules_minidock__pusher_app_linux_x86_64",
-            sha256 = "f1c54864658bd3ca0ff299d290a9443715b6c676f885acbcd0c7b2f8bb4e0a5f",
+            sha256 = "46a62495c854c65ee7cf50bf108f1e5f73a02dd20b53a15408062030b26a709b",
             packaged = False,
             binary_path = "pusher-app-linux-x86_64",
-            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/pusher-app-linux-x86_64"],
+            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/pusher-app-linux-x86_64"],
         )
 
     if "rules_minidock__pusher_app_macos_x86_64" not in excludes:
         load_tool(
             name = "rules_minidock__pusher_app_macos_x86_64",
-            sha256 = "3a768b195bd6956f5dd5821ecc9cb55e4fa5c317023499a46970bec7918c0568",
+            sha256 = "4322e696f278515369f641797de65b25761c70aa115e773975d9077110756753",
             packaged = False,
             binary_path = "pusher-app-macos-x86_64",
-            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/pusher-app-macos-x86_64"],
+            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/pusher-app-macos-x86_64"],
         )
 
     if "rules_minidock__pusher_app_macos_aarch64" not in excludes:
         load_tool(
             name = "rules_minidock__pusher_app_macos_aarch64",
-            sha256 = "8b17f098018e557c300eeb06cb3e4fd494d6ff9d2023ae86cfe3da3ddbd484c5",
+            sha256 = "84919fa3533e4fa5998c50487c663a5c10f24090c75d9d7b8b70ab196e965265",
             packaged = False,
             binary_path = "pusher-app-macos-aarch64",
-            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/pusher-app-macos-aarch64"],
+            urls = ["https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/pusher-app-macos-aarch64"],
         )
     if "rules_minidock__puller_app" not in excludes:
         repo_rule_load_tool(
             name="rules_minidock__puller_app",
             platform_to_sha_pairs = {
-                "linux__x86_64": ["e2dd98168c03174c8ed13b9c109e922ff719c93b30f6e251c2419925d78a653c", "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/puller-app-linux-x86_64"],
-                "macos__x86_64": ["ae999ed3dfee59d94983cb6f086023b892148f35a79307aed19e7ebf88794e65", "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/puller-app-macos-x86_64"],
-                "macos__aarch64": ["0be38f7b85800653eb0248b9572d9d69bc54c076b960146164cadc01311af065", "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.34/puller-app-macos-aarch64"],
+                "linux__x86_64": ["743794acde8bfb2ac95e64a70136b2274debcccc5e74cb083692d3726bbd7b4f", "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/puller-app-linux-x86_64"],
+                "macos__x86_64": ["3b59bd851e400329d6f8edc6b282273aae0302873ab4a3fbc49424b9d72f3fd4", "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/puller-app-macos-x86_64"],
+                "macos__aarch64": ["4857f562d33c06fe3fd5dea5133bdb4815a2e80905506a7e51f91aa046c85611", "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.35/puller-app-macos-aarch64"],
             }
         )
     # RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_END
