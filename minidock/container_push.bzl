@@ -4,7 +4,25 @@ load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "Container
 launcher_template = """
 #!/bin/bash
 
+function guess_runfiles() {{
+    if [ -d ${{BASH_SOURCE[0]}}.runfiles ]; then
+ # Runfiles are adjacent to the current script.
+        echo "$( cd ${{BASH_SOURCE[0]}}.runfiles && pwd )"
+    else
+        # The current script is within some other script's runfiles.
+        mydir="$( cd "$( dirname "${{BASH_SOURCE[0]}}" )" && pwd )"
+        echo $mydir | sed -e 's/\\.runfiles\\/.*/.runfiles/'
+    fi
+}}
+
 set -euo pipefail
+
+# We never use anything from the original CWD, so move to the runfiles location if not there.
+GEN_RUNFILES="$(guess_runfiles)"
+if [ -n "$GEN_RUNFILES" ]; then
+    cd $GEN_RUNFILES
+    cd {workspace_name}
+fi
 
 exec {tool} --pusher-config {config_file_path} --cache-path {local_cache_path} {verbose_str} "$@"
 """
@@ -32,7 +50,19 @@ def __container_push_impl(ctx):
         executable = ctx.executable.merger,
     )
 
-    registry = ctx.expand_make_variables("registry", ctx.attr.registry, {})
+    registry_list = []
+    if ctx.attr.registry != None and ctx.attr.registry != "":
+        registry_list.append(ctx.attr.registry)
+
+    for reg in ctx.attr.registry_list:
+        if len(reg) == 0:
+            fail("Passed an invalid registry, was an empty string")
+        registry_list.append(reg)
+
+    if len(registry_list) == 0:
+        fail("Need to supply at least one of registry or registry_list")
+
+
     repository = ctx.expand_make_variables("repository", ctx.attr.repository, {})
     container_tags = ctx.attr.container_tags
     container_tag_file = None
@@ -45,7 +75,7 @@ def __container_push_impl(ctx):
 
     pusher_config = struct(
         merger_data = configured_data.short_path,
-        registry = registry,
+        registry_list = registry_list,
         repository = repository,
         container_tags = container_tags,
         registry_type = ctx.attr.registry_format,
@@ -68,6 +98,7 @@ def __container_push_impl(ctx):
     ctx.actions.write(
         exe,
         launcher_template.format(
+            workspace_name = ctx.workspace_name,
             tool = ctx.executable.pusher.short_path,
             config_file_path = pusher_config_file.short_path,
             local_cache_path = ctx.attr.local_cache_path,
@@ -98,8 +129,13 @@ container_push = rule(
             doc = "The form to push: Docker or OCI, default to 'Docker'.",
         ),
         "registry": attr.string(
-            mandatory = True,
+            mandatory = False,
             doc = "The registry to which we are pushing.",
+        ),
+        "registry_list": attr.string_list(
+            mandatory = False,
+            doc = "Extra registries to push to, where its the same repository.",
+            default = []
         ),
         "repository": attr.string(
             mandatory = True,
