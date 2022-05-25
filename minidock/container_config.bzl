@@ -40,18 +40,14 @@ container_config = rule(
         See https://docs.docker.com/engine/reference/builder/#cmd
 
         Cmd @ None -> Ignore and leave as base image
-        Cmd @ [] -> Set to empty
-
-        This field supports stamp variables.""",
+        Cmd @ [] -> Set to empty""",
             mandatory = False,
         ),
         "entrypoint": attr.string_list(
             doc = """List of entrypoints to add in the image.
 
         entrypoint @ None -> Ignore and leave as base image
-        entrypoint @ [] -> Set to empty
-
-        This field supports stamp variables.""",
+        entrypoint @ [] -> Set to empty""",
             mandatory = False,
         ),
         "env": attr.string_dict(
@@ -62,18 +58,13 @@ container_config = rule(
             doc = """The user that the image should run as.
         See https://docs.docker.com/engine/reference/builder/#user
         Because building the image never happens inside a Docker container,
-        this user does not affect the other actions (e.g., adding files).
-        This field supports stamp variables.""",
+        this user does not affect the other actions (e.g., adding files).""",
         ),
         "workdir": attr.string(
             doc = """Initial working directory when running the Docker image.
-
         See https://docs.docker.com/engine/reference/builder/#workdir
-
         Because building the image never happens inside a Docker container,
-        this working directory does not affect the other actions (e.g., adding files).
-
-        This field supports stamp variables.""",
+        this working directory does not affect the other actions (e.g., adding files).""",
         ),
     },
     implementation = __container_config__impl,

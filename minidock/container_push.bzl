@@ -80,12 +80,14 @@ def __container_push_impl(ctx):
         container_tags = container_tags,
         registry_type = ctx.attr.registry_format,
         container_tag_file = container_tag_file,
+        stamp_info_file = ctx.info_file.short_path,
+        stamp_to_env = ctx.attr.stamp_to_env
     )
 
     pusher_config_file = ctx.actions.declare_file("%s_pusher_config.json" % ctx.attr.name)
     ctx.actions.write(pusher_config_file, json.encode(pusher_config))
 
-    pusher_runfiles = [ctx.executable.pusher, pusher_config_file, configured_data] + merger_input + pusher_input
+    pusher_runfiles = [ctx.executable.pusher, pusher_config_file, configured_data, ctx.info_file] + merger_input + pusher_input
     runfiles = ctx.runfiles(files = pusher_runfiles, transitive_files = composed_transitive_deps)
     runfiles = runfiles.merge(ctx.attr.pusher[DefaultInfo].default_runfiles)
 
@@ -162,6 +164,10 @@ container_push = rule(
             default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:merge_app",
             cfg = "host",
             executable = True,
+        ),
+        "stamp_to_env": attr.bool(
+            default = True,
+            mandatory = False
         ),
         "local_cache_path": attr.string(
             default = "/tmp/bzl_docker_cache",
