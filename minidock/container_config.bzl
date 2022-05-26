@@ -12,13 +12,29 @@ def __expand_env(ctx, env):
     return env_lst
 
 def __container_config__impl(ctx):
+
+    entry_point = ctx.attr.entrypoint
+    if entry_point[0] == "rules_minidock_is_unset":
+        entry_point = None
+
+    cmd = ctx.attr.cmd
+    if cmd[0] == "rules_minidock_is_unset":
+        cmd = None
+
+    user = ctx.attr.user
+    if user == "rules_minidock_is_unset":
+        user = None
+
+    workdir = ctx.attr.workdir
+    if workdir == "rules_minidock_is_unset":
+        workdir = None
     layer_config = struct(
         config = struct(
-            Entrypoint = ctx.attr.entrypoint,
-            Cmd = ctx.attr.cmd,
+            Entrypoint = entry_point,
+            Cmd = cmd,
             Env = __expand_env(ctx, ctx.attr.env),
-            User = ctx.attr.user,
-            WorkingDir = ctx.attr.workdir,
+            User = user,
+            WorkingDir = workdir,
         ),
     )
 
@@ -42,6 +58,7 @@ container_config = rule(
         Cmd @ None -> Ignore and leave as base image
         Cmd @ [] -> Set to empty""",
             mandatory = False,
+            default = ["rules_minidock_is_unset"],
         ),
         "entrypoint": attr.string_list(
             doc = """List of entrypoints to add in the image.
@@ -49,6 +66,7 @@ container_config = rule(
         entrypoint @ None -> Ignore and leave as base image
         entrypoint @ [] -> Set to empty""",
             mandatory = False,
+            default = ["rules_minidock_is_unset"],
         ),
         "env": attr.string_dict(
             doc = """Environmental variables to set""",
@@ -59,12 +77,14 @@ container_config = rule(
         See https://docs.docker.com/engine/reference/builder/#user
         Because building the image never happens inside a Docker container,
         this user does not affect the other actions (e.g., adding files).""",
+            default = "rules_minidock_is_unset",
         ),
         "workdir": attr.string(
             doc = """Initial working directory when running the Docker image.
         See https://docs.docker.com/engine/reference/builder/#workdir
         Because building the image never happens inside a Docker container,
         this working directory does not affect the other actions (e.g., adding files).""",
+            default = "rules_minidock_is_unset",
         ),
     },
     implementation = __container_config__impl,
