@@ -1,3 +1,20 @@
+AssembledData = provider(fields = [
+    # a file
+    "manifest",
+    # a file
+    "config",
+    # a file
+    "upload_metadata",
+    #a depset
+    "dependencies"
+])
+
+
+ManifestResult = provider(fields = [
+    # depset of manifest
+    "manifest",
+])
+
 ContainerInfo = provider(fields = [
     # For a given layer of content, this exposes in the information about that generated content
     "layer_data",

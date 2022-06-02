@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "container_info_struct")
+load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo","AssembledData", "container_info_struct")
 
 
 launcher_template = """
@@ -30,25 +30,7 @@ exec {tool} --pusher-config {config_file_path} --cache-path {local_cache_path} {
 def __container_push_impl(ctx):
     merger_input = []
 
-    composed = ctx.attr.composed[ContainerInfo]
-    composed_transitive_deps = composed.dependencies
-
-    configured_data = ctx.actions.declare_directory("%s_configured_data" % ctx.attr.name)
-    merger_config_file = ctx.actions.declare_file("%s_merger_config_file.json" % ctx.attr.name)
-    ctx.actions.write(merger_config_file, json.encode(container_info_struct(composed)))
-    merger_input.append(merger_config_file)
-
-    merger_args = ctx.actions.args()
-    merger_args.add("--merger-config-path").add(merger_config_file)
-    merger_args.add("--directory-output").add(configured_data.path)
-    merger_args.add("--directory-output-short-path").add(configured_data.short_path)
-
-    ctx.actions.run(
-        inputs = depset(merger_input, transitive = [composed_transitive_deps]),
-        outputs = [configured_data],
-        arguments = [merger_args],
-        executable = ctx.executable.merger,
-    )
+    assembled = ctx.attr.assembled[AssembledData]
 
     registry_list = []
     if ctx.attr.registry != None and ctx.attr.registry != "":
@@ -74,7 +56,9 @@ def __container_push_impl(ctx):
         pusher_input.append(ctx.file.container_tag_file)
 
     pusher_config = struct(
-        merger_data = configured_data.short_path,
+        manifest_path = assembled.manifest.short_path,
+        config_path = assembled.config.short_path,
+        upload_metadata_path = assembled.upload_metadata.short_path,
         registry_list = registry_list,
         repository = repository,
         container_tags = container_tags,
@@ -87,8 +71,8 @@ def __container_push_impl(ctx):
     pusher_config_file = ctx.actions.declare_file("%s_pusher_config.json" % ctx.attr.name)
     ctx.actions.write(pusher_config_file, json.encode(pusher_config))
 
-    pusher_runfiles = [ctx.executable.pusher, pusher_config_file, configured_data, ctx.info_file] + merger_input + pusher_input
-    runfiles = ctx.runfiles(files = pusher_runfiles, transitive_files = composed_transitive_deps)
+    pusher_runfiles = [ctx.executable.pusher, pusher_config_file, ctx.info_file] + pusher_input
+    runfiles = ctx.runfiles(files = pusher_runfiles, transitive_files = assembled.dependencies)
     runfiles = runfiles.merge(ctx.attr.pusher[DefaultInfo].default_runfiles)
 
     exe = ctx.actions.declare_file(ctx.label.name)
@@ -112,15 +96,15 @@ def __container_push_impl(ctx):
         DefaultInfo(
             executable = exe,
             runfiles = runfiles,
-        ),
+        )
     ]
 
 container_push = rule(
     attrs = {
-        "composed": attr.label(
-            providers = [ContainerInfo],
+        "assembled": attr.label(
+            providers = [AssembledData],
             mandatory = True,
-            doc = "The label of the image to push.",
+            doc = "The assembled data to push.",
         ),
         "registry_format": attr.string(
             mandatory = True,
@@ -159,11 +143,6 @@ container_push = rule(
         ),
         "pusher_verbose": attr.bool(
             default = False,
-        ),
-        "merger": attr.label(
-            default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:merge_app",
-            cfg = "host",
-            executable = True,
         ),
         "stamp_to_env": attr.bool(
             default = True,
