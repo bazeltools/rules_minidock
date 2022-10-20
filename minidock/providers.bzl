@@ -1,6 +1,8 @@
 AssembledData = provider(fields = [
     # a file
     "manifest",
+    # File with the sha256 of the manifest
+    "manifest_sha256",
     # a file
     "config",
     # a file
