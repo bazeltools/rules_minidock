@@ -59,7 +59,10 @@ def __container_assemble_impl(ctx):
         config = merger_config_output,
         upload_metadata = merger_upload_metadata_output,
         dependencies = depset([merger_manifest_output, merger_config_output, merger_upload_metadata_output], transitive = [merger_input])
-    )
+    ),
+    DefaultInfo(
+            files = depset([merger_manifest_output]),
+        )
     ]
 
 container_assemble = rule(
