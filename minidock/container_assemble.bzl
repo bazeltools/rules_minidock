@@ -58,6 +58,7 @@ def __container_assemble_impl(ctx):
     return [
         AssembledData(
         manifest = merger_manifest_output,
+        manifest_sha256 = merger_manifest_sha256_output,
         config = merger_config_output,
         upload_metadata = merger_upload_metadata_output,
         dependencies = depset([merger_manifest_output, merger_config_output, merger_upload_metadata_output], transitive = [merger_input])
