@@ -14,11 +14,11 @@ def __expand_env(ctx, env):
 def __container_config__impl(ctx):
 
     entry_point = ctx.attr.entrypoint
-    if entry_point[0] == "rules_minidock_is_unset":
+    if len(entry_point) == 1 and entry_point[0] == "rules_minidock_is_unset":
         entry_point = None
 
     cmd = ctx.attr.cmd
-    if cmd[0] == "rules_minidock_is_unset":
+    if len(cmd) == 1 and cmd[0] == "rules_minidock_is_unset":
         cmd = None
 
     user = ctx.attr.user
