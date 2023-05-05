@@ -1,0 +1,16 @@
+name: CI
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - main
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: example
+        shell: bash
+        run: scripts/ci-test.sh
