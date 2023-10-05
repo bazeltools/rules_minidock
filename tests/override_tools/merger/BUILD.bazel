@@ -3,5 +3,4 @@ load(
     "wrap_executable",
 )
 
-wrap_executable(name = "merger", executable_path = "merger-app",     visibility = ["//visibility:public"],
-)
+wrap_executable(name = "merger", executable_path = "merger-app", visibility = ["//visibility:public"])

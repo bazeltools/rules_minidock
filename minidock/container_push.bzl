@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo","AssembledData", "container_info_struct")
+load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "AssembledData")
 
 
 launcher_template = """

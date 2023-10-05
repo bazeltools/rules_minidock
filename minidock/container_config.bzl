@@ -28,6 +28,7 @@ def __container_config__impl(ctx):
     workdir = ctx.attr.workdir
     if workdir == "rules_minidock_is_unset":
         workdir = None
+
     layer_config = struct(
         config = struct(
             Entrypoint = entry_point,
@@ -35,6 +36,7 @@ def __container_config__impl(ctx):
             Env = __expand_env(ctx, ctx.attr.env),
             User = user,
             WorkingDir = workdir,
+            Labels = ctx.attr.labels
         ),
     )
 
@@ -86,6 +88,10 @@ container_config = rule(
         this working directory does not affect the other actions (e.g., adding files).""",
             default = "rules_minidock_is_unset",
         ),
+        "labels": attr.string_dict(
+            doc = """Config labels. Will merge with parent labels: does *not replace all labels in parent dict.""",
+            mandatory = False,
+            )
     },
     implementation = __container_config__impl,
 )
