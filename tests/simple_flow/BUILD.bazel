@@ -39,9 +39,11 @@ container_config(
 )
 
 container_config(
-    name = "labels",
+    name = "labels_and_env",
     labels = {"label1": "foo",
-              "label2": "bar"}
+              "label2": "bar"},
+    env = {"ENV1": "FOO",
+           "ENV2": "BAR"}
 )
 
 container_compose(
@@ -51,7 +53,7 @@ container_compose(
         ":file_a_data",
         ":file_b_data",
         ":user_and_app",
-        ":labels"
+        ":labels_and_env"
     ],
 )
 
