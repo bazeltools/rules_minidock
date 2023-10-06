@@ -15,6 +15,10 @@ load(
     "@com_github_bazeltools_rules_minidock//minidock:container_push.bzl",
     "container_push",
 )
+load(
+    "@com_github_bazeltools_rules_minidock//minidock:container_config.bzl",
+    "container_config",
+)
 
 container_data(
     name = "file_a_data",
@@ -26,12 +30,30 @@ container_data(
     files = ["file_b.txt"],
 )
 
+container_config(
+    name = "user_and_app",
+    user = "nfbasic",
+    cmd = [
+        "/usr/bin/my_app",
+    ],
+)
+
+container_config(
+    name = "labels_and_env",
+    labels = {"label1": "foo",
+              "label2": "bar"},
+    env = {"ENV1": "FOO",
+           "ENV2": "BAR"}
+)
+
 container_compose(
     name = "test_simple_imagen",
     base = "@bazel_320//:metadata",
     layers = [
         ":file_a_data",
         ":file_b_data",
+        ":user_and_app",
+        ":labels_and_env"
     ],
 )
 

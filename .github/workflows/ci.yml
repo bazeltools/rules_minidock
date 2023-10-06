@@ -13,4 +13,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: example
         shell: bash
-        run: scripts/ci-test.sh
+        run: scripts/ci_test.py
