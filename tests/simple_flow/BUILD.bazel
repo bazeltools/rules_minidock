@@ -30,9 +30,14 @@ genrule(
     cmd = """
 cat << EOF > $@
 {
-  "Env": {"EXTERNALENV1": "extenv1"}
-  "Labels": {"external_label_1": "extl1",
-             "external_label_2": "extl2",}
+  "Env": [
+    "EXTERNALENV1=extenv1"
+  ],
+  "Labels": {
+    "label1": "this-will-get-overwritten-by-the-config-below",
+    "external-config-label-1": "extlabel1",
+    "external-config-label-2": "extlabel2"
+  }
 }
 EOF""",
     stamp = 1,
