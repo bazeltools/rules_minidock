@@ -19,6 +19,24 @@ load(
     "@com_github_bazeltools_rules_minidock//minidock:container_config.bzl",
     "container_config",
 )
+load(
+    "@com_github_bazeltools_rules_minidock//minidock:container_config.bzl",
+    "external_container_config",
+)
+
+genrule(
+    name = "external_config_file",
+    outs = ["ConfigFile.json"],
+    cmd = """
+cat << EOF > $@
+{
+  "Env": {"EXTERNALENV1": "extenv1"}
+  "Labels": {"external_label_1": "extl1",
+             "external_label_2": "extl2",}
+}
+EOF""",
+    stamp = 1,
+)
 
 container_data(
     name = "file_a_data",
@@ -46,6 +64,11 @@ container_config(
            "ENV2": "BAR"}
 )
 
+external_container_config(
+    name = "external_config_labels_and_env",
+    config = ":external_config_file"
+)
+
 container_compose(
     name = "test_simple_imagen",
     base = "@bazel_320//:metadata",
@@ -53,8 +76,9 @@ container_compose(
         ":file_a_data",
         ":file_b_data",
         ":user_and_app",
-        ":labels_and_env"
+        ":labels_and_env",
     ],
+    external_config = ":external_config_labels_and_env"
 )
 
 container_assemble(

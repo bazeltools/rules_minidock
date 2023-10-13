@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo")
+load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "ExternalContainerConfig")
 
 def __expand_env(ctx, env):
     env_lst = None
@@ -36,7 +36,7 @@ def __container_config__impl(ctx):
             Env = __expand_env(ctx, ctx.attr.env),
             User = user,
             WorkingDir = workdir,
-            Labels = ctx.attr.labels
+            Labels = ctx.attr.labels,
         ),
     )
 
@@ -89,9 +89,19 @@ container_config = rule(
             default = "rules_minidock_is_unset",
         ),
         "labels": attr.string_dict(
-            doc = """Config labels. Will merge with parent labels: does *not replace all labels in parent dict.""",
+            doc = """Config labels. Will take precedence over any labels in labels_file""",
             mandatory = False,
-            )
+        )
     },
     implementation = __container_config__impl,
+)
+
+def __external_config__impl(ctx):
+    return [ExternalContainerConfig(config = ctx.file.config)]
+
+external_container_config = rule(
+    attrs = {
+        "config": attr.label(allow_single_file=True)
+    },
+    implementation = __external_config__impl
 )

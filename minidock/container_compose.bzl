@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo")
+load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "ExternalContainerConfig")
 
 
 def __copy_provider_with(current, parent):
@@ -41,6 +41,7 @@ def __container_compose_impl(
     base_info = ctx.attr.base[ContainerInfo] if ctx.attr.base != None else None
     return [
         __align_parents(base_info, layers),
+        ExternalContainerConfig(config = ctx.attr.external_config)
     ]
 
 container_compose = rule(
@@ -53,6 +54,10 @@ container_compose = rule(
         "layers": attr.label_list(
             providers = [ContainerInfo],
         ),
+        "external_config": attr.label(
+            doc = "External config file to be merged with this composition",
+            mandatory = False,
+        )
     },
     implementation = __container_compose_impl,
 )

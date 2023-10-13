@@ -30,6 +30,12 @@ ContainerInfo = provider(fields = [
     "config",
 ])
 
+ExternalContainerConfig = provider(fields = [
+    # A target to an external config file that we can merge with
+    # all other config layers
+    "config"
+])
+
 def container_info_struct(container_info):
     # Building a struct of both our rule-provided info and the parent info
     # to pass to the merger app
