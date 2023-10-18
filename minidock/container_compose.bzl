@@ -54,9 +54,10 @@ container_compose = rule(
         "layers": attr.label_list(
             providers = [ContainerInfo],
         ),
-        "external_config": attr.label(
+        "external_config": attr.label_list(
             doc = "External config file to be merged with this composition",
             mandatory = False,
+            allow_files = True
         )
     },
     implementation = __container_compose_impl,

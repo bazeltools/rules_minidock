@@ -48,10 +48,13 @@ def __container_assemble_impl(ctx):
     merger_args.add("--upload-metadata-path").add(merger_upload_metadata_output.path)
     merger_args.add("--config-path").add(merger_config_output.path)
 
-    if composed_external_config:
-        merger_args.add("--external-config-path").add(composed_external_config.config)
+    inputs = [merger_config_file]
+    for target in composed_external_config.config:
+        external_config_files = target.files.to_list()
+        inputs = inputs + external_config_files
+        merger_args.add("--external-config-path").add_all(external_config_files)
 
-    merger_input = depset([merger_config_file], transitive = [composed_transitive_deps])
+    merger_input = depset(inputs, transitive = [composed_transitive_deps])
     ctx.actions.run(
         inputs = merger_input,
         outputs = [merger_config_output, merger_manifest_output, merger_upload_metadata_output, merger_manifest_sha256_output],

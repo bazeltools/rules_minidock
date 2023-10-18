@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "ExternalContainerConfig")
+load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo")
 
 def __expand_env(ctx, env):
     env_lst = None
@@ -94,14 +94,4 @@ container_config = rule(
         )
     },
     implementation = __container_config__impl,
-)
-
-def __external_config__impl(ctx):
-    return [ExternalContainerConfig(config = ctx.file.config)]
-
-external_container_config = rule(
-    attrs = {
-        "config": attr.label(allow_single_file=True)
-    },
-    implementation = __external_config__impl
 )
