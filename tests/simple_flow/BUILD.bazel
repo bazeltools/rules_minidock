@@ -19,6 +19,39 @@ load(
     "@com_github_bazeltools_rules_minidock//minidock:container_config.bzl",
     "container_config",
 )
+genrule(
+    name = "external_config_file",
+    outs = ["ConfigFile.json"],
+    cmd = """
+cat << EOF > $@
+{
+  "Env": [
+    "EXTERNALENV1=extenv1"
+  ],
+  "Labels": {
+    "label1": "this-will-get-overwritten-by-the-config-below",
+    "external-config-label-1": "extlabel1",
+    "external-config-label-2": "extlabel2"
+  }
+}
+EOF""",
+    stamp = 1,
+)
+
+genrule(
+    name = "external_config_file_2",
+    outs = ["ConfigFile2.json"],
+    cmd = """
+cat << EOF > $@
+{
+  "Labels": {
+    "external-config-label-3": "extlabel3",
+    "external-config-label-4": "extlabel4"
+  }
+}
+EOF""",
+    stamp = 1,
+)
 
 container_data(
     name = "file_a_data",
@@ -53,8 +86,9 @@ container_compose(
         ":file_a_data",
         ":file_b_data",
         ":user_and_app",
-        ":labels_and_env"
+        ":labels_and_env",
     ],
+    external_config = [":external_config_file", ":external_config_file_2"]
 )
 
 container_assemble(

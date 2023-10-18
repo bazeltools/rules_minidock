@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "ManifestResult", "AssembledData", "container_info_struct")
+load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "ManifestResult", "AssembledData", "ExternalContainerConfig", "container_info_struct")
 
 
 launcher_template = """
@@ -31,6 +31,7 @@ def __container_assemble_impl(ctx):
 
     composed = ctx.attr.composed[ContainerInfo]
     composed_transitive_deps = composed.dependencies
+    composed_external_config = ctx.attr.composed[ExternalContainerConfig]
 
     merger_config_output = ctx.actions.declare_file("%s_merger_config.json" % ctx.attr.name)
     merger_manifest_output = ctx.actions.declare_file("%s_merger_manifest.json" % ctx.attr.name)
@@ -47,7 +48,13 @@ def __container_assemble_impl(ctx):
     merger_args.add("--upload-metadata-path").add(merger_upload_metadata_output.path)
     merger_args.add("--config-path").add(merger_config_output.path)
 
-    merger_input = depset([merger_config_file], transitive = [composed_transitive_deps])
+    transdepsets = [composed_transitive_deps]
+    for target in composed_external_config.config:
+        external_config_files = target.files
+        transdepsets.append(external_config_files)
+        merger_args.add("--external-config-path").add_all(external_config_files)
+
+    merger_input = depset([merger_config_file], transitive = transdepsets)
     ctx.actions.run(
         inputs = merger_input,
         outputs = [merger_config_output, merger_manifest_output, merger_upload_metadata_output, merger_manifest_sha256_output],

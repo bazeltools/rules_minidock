@@ -36,7 +36,7 @@ def __container_config__impl(ctx):
             Env = __expand_env(ctx, ctx.attr.env),
             User = user,
             WorkingDir = workdir,
-            Labels = ctx.attr.labels
+            Labels = ctx.attr.labels,
         ),
     )
 
@@ -89,9 +89,9 @@ container_config = rule(
             default = "rules_minidock_is_unset",
         ),
         "labels": attr.string_dict(
-            doc = """Config labels. Will merge with parent labels: does *not replace all labels in parent dict.""",
+            doc = """Config labels. Will take precedence over any labels in labels_file""",
             mandatory = False,
-            )
+        )
     },
     implementation = __container_config__impl,
 )

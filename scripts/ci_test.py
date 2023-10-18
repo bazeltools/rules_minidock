@@ -21,7 +21,14 @@ user = data["config"]["User"]
 env = data["config"]["Env"]
 
 expected_cmd = ["/usr/bin/my_app"]
-expected_labels = {"label1": "foo", "label2": "bar"}
+expected_labels = {
+    "label1": "foo",
+    "label2": "bar",
+    "external-config-label-1": "extlabel1",
+    "external-config-label-2": "extlabel2",
+    "external-config-label-3": "extlabel3",
+    "external-config-label-4": "extlabel4"
+}
 expected_user = "nfbasic"
 
 assert(cmd == expected_cmd)
@@ -31,6 +38,7 @@ assert(user == expected_user)
 assert(len(env) > 2)
 assert("ENV1=FOO" in env)
 assert("ENV2=BAR" in env)
+assert("EXTERNALENV1=extenv1" in env)
 
 subprocess.run(["bazel", "clean", "--expunge"], check=True)
 subprocess.run(["bazel", "build", "..."], check=True)
