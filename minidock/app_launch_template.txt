@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+test -f /etc/profile.d/netflix_environment.sh && source /etc/profile.d/netflix_environment.sh
+
+export RUNFILES_DIR="%runfiles_path%"
+export JAVA_RUNFILES="%runfiles_path%"
+export JAVABIN=/usr/bin/java
+# For some reason the user doesn't seem to be set
+export USER="${USER:-$(whoami)}"
+exec %exec_path% "$@"

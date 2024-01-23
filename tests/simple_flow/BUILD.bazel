@@ -19,6 +19,28 @@ load(
     "@com_github_bazeltools_rules_minidock//minidock:container_config.bzl",
     "container_config",
 )
+load(
+    "@com_github_bazeltools_rules_minidock//minidock:container_binary.bzl",
+    "container_binary",
+)
+load(
+    "@python_versions//3.10:defs.bzl",
+    compile_pip_requirements_3_10 = "compile_pip_requirements",
+)
+load(
+    "@rules_python//python:defs.bzl",
+    "py_binary",
+)
+
+PANDAS = "@@rules_python~0.24.0~pip~pip_310_pandas//:pkg"
+
+compile_pip_requirements_3_10(
+    name = "requirements_3_10",
+    extra_args = ["--allow-unsafe"],
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements_lock_3_10.txt",
+)
+
 genrule(
     name = "external_config_file",
     outs = ["ConfigFile.json"],
@@ -103,4 +125,16 @@ container_push(
     registry = "http://localhost:9000",
     repository = "docker/test",
     container_tags = ["unchanged_tag1"],
+)
+
+py_binary(
+    name = "hello",
+    srcs = ["hello.py"],
+    deps = [PANDAS],
+    visibility = ["//visibility:public"],
+)
+
+container_binary(
+    name = "bin",
+    binary = ":hello",
 )
