@@ -24,7 +24,7 @@ if [ -n "$GEN_RUNFILES" ]; then
     cd {workspace_name}
 fi
 
-exec {tool} --pusher-config {config_file_path} --cache-path {local_cache_path} {verbose_str} "$@"
+exec {tool} --pusher-config {config_file_path} --cache-path {local_cache_path} {verbose_str} {auth_helper} "$@"
 """
 
 def __container_push_impl(ctx):
@@ -81,6 +81,12 @@ def __container_push_impl(ctx):
     if ctx.attr.pusher_verbose:
         verbose_str = "--verbose"
 
+    auth_helper_arg = ""
+    if ctx.executable.authentication_helper:
+        helper_arg = ",".join(["%s:%s" % (reg, ctx.executable.authentication_helper.short_path) for reg in registry_list])
+        auth_helper_arg =  "--docker-authorization-helpers %s" % (helper_arg)
+        runfiles = runfiles.merge(ctx.attr.authentication_helper[DefaultInfo].default_runfiles)
+
     ctx.actions.write(
         exe,
         launcher_template.format(
@@ -88,7 +94,8 @@ def __container_push_impl(ctx):
             tool = ctx.executable.pusher.short_path,
             config_file_path = pusher_config_file.short_path,
             local_cache_path = ctx.attr.local_cache_path,
-            verbose_str = verbose_str
+            verbose_str = verbose_str,
+            auth_helper = auth_helper_arg
         ),
         is_executable = True,
     )
@@ -140,6 +147,12 @@ container_push = rule(
             cfg = "host",
             executable = True,
             allow_files = True,
+        ),
+        "authentication_helper": attr.label(
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+            mandatory = False
         ),
         "pusher_verbose": attr.bool(
             default = False,

@@ -28,6 +28,10 @@ def ___external_container_repo(repository_ctx):
     fetch_args.append("--architecture")
     fetch_args.append(repository_ctx.attr.architecture)
 
+    if repository_ctx.attr.authentication_helper:
+        fetch_args.append("--docker-authorization-helpers")
+        fetch_args.append("%s:%s" % (repository_ctx.attr.registry, repository_ctx.path(repository_ctx.attr.authentication_helper)))
+
 
     result = repository_ctx.execute(fetch_args)
     if result.return_code:
@@ -71,6 +75,12 @@ external_container_repo = repository_rule(
             mandatory = False,
             default = "amd64",
             doc = "Architecture.",
+        ),
+        "authentication_helper": attr.label(
+            cfg = "host",
+            executable = True,
+            allow_files = True,
+            mandatory = False
         ),
     },
     implementation = ___external_container_repo,
