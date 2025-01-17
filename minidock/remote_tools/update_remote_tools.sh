@@ -30,7 +30,7 @@ fi
 
 if [ -z "$CI_UPDATE_GITHUB_ORG_AND_REPO_NAME" ]; then
     ORIGIN_URL="$(git config --get remote.origin.url)"
-    CI_UPDATE_GITHUB_ORG_AND_REPO_NAME="$(echo $ORIGIN_URL | sed -e 's/.*github\.com:\([A-Za-z0-9_/-]*\)\.git/\1/')_tools"
+    CI_UPDATE_GITHUB_ORG_AND_REPO_NAME="$(echo $ORIGIN_URL | sed -e 's/.*github\.com[:/]\([A-Za-z0-9_/-]*\)\.git/\1/')_tools"
     if [[ "$CI_UPDATE_GITHUB_ORG_AND_REPO_NAME" =~ ":" ]]; then
         echo "Failed to parse out CI_UPDATE_GITHUB_ORG_AND_REPO_NAME from origin, origin was: $ORIGIN_URL"
         exit 1
