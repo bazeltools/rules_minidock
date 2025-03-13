@@ -94,7 +94,7 @@ def __container_data_impl(
         tars = [f.path for f in ctx.files.tars],
     )
     manifest_file = ctx.actions.declare_file(ctx.attr.name + "-layer.manifest")
-    ctx.actions.write(manifest_file, manifest.to_json())
+    ctx.actions.write(manifest_file, json.encode(manifest))
     args.add(manifest_file, format = "--manifest=%s")
     args.add(ctx.attr.gzip_compression_level, format = "--gzip_compression_level=%s")
 
