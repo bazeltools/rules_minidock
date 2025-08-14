@@ -162,7 +162,7 @@ container_data = rule(
             default = "0o555",  # 0o555 == a+rx
             doc = "Set the mode of files added by the `files` attribute.",
         ),
-        "mtime": attr.string(
+        "mtime": attr.int(
             default = 0, # January 1, 1970, 00:00:00 UTC
             doc = "The mtime to use when making .tar.gz outputs, use portable for reproducible builds"
         ),
