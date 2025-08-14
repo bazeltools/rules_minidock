@@ -97,7 +97,7 @@ def __container_data_impl(
     ctx.actions.write(manifest_file, json.encode(manifest))
     args.add(manifest_file, format = "--manifest=%s")
     args.add(ctx.attr.gzip_compression_level, format = "--gzip_compression_level=%s")
-    args.add(ctx.attr.mtime, format = "--default_mtime=%s")
+    args.add(ctx.attr.mtime, format = "--mtime=%s")
 
     ctx.actions.run(
         executable = ctx.executable._build_tar,
