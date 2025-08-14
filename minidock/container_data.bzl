@@ -164,7 +164,7 @@ container_data = rule(
         ),
         "mtime": attr.int(
             default = 0, # January 1, 1970, 00:00:00 UTC
-            doc = "The mtime to use when making .tar.gz outputs, use portable for reproducible builds"
+            doc = "The mtime value to use for files when making .tar.gz outputs."
         ),
         "symlinks": attr.string_dict(
             doc = """Symlinks to create in the Docker image.
