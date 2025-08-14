@@ -163,7 +163,7 @@ container_data = rule(
             doc = "Set the mode of files added by the `files` attribute.",
         ),
         "mtime": attr.int(
-            default = 0, # January 1, 1970, 00:00:00 UTC
+            default = 1262304000, # January 1, 2010, 00:00:00 UTC
             doc = "The mtime value to use for files when making .tar.gz outputs."
         ),
         "symlinks": attr.string_dict(
