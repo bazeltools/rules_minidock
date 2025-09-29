@@ -46,13 +46,16 @@ class TarFileWriter(object):
                name,
                compression='',
                gzip_compression_level=9,
+               zstd_compression_level=3,
                root_directory='./',
                default_mtime=None,
                preserve_tar_mtimes=True):
     """TarFileWriter wraps tarfile.open().
     Args:
       name: the tar file name.
-      compression: compression type: bzip2, bz2, gz, tgz, xz, lzma.
+      compression: compression type: bzip2, bz2, gz, tgz, xz, lzma, zstd.
+      gzip_compression_level: compression level for gzip (1-9).
+      zstd_compression_level: compression level for zstd (1-22).
       root_directory: virtual root to prepend to elements in the archive.
       default_mtime: default mtime to use for elements in the archive.
           May be an integer or the value 'portable' to use the date
@@ -66,17 +69,21 @@ class TarFileWriter(object):
     self.gz = compression in ['tgz', 'gz']
     # Support xz compression through xz... until we can use Py3
     self.xz = compression in ['xz', 'lzma']
+    # Support zstd compression through zstd command line tool
+    self.zstd = compression == 'zstd'
+    self.zstd_compression_level = zstd_compression_level
     self.name = name
     self.root_directory = root_directory.rstrip('/')
     self.preserve_mtime = preserve_tar_mtimes
     if default_mtime is None:
       self.default_mtime = 0
     elif default_mtime == 'portable':
-      self.default_mtime = PORTABLE_MTIME
+      self.default_mtime = 946684800  # January 1, 2000, 00:00:00 UTC
     else:
       self.default_mtime = int(default_mtime)
 
     self.fileobj = None
+    self._raw_file = None
     if self.gz:
       # The Tarfile class doesn't allow us to specify gzip's mtime attribute.
       # Instead, we manually re-implement gzopen from tarfile.py and set mtime.
@@ -287,7 +294,9 @@ class TarFileWriter(object):
       compression = 'bz2'
     elif compression == 'lzma':
       compression = 'xz'
-    elif compression not in ['gz', 'bz2', 'xz']:
+    elif compression == 'zst':
+      compression = 'zstd'
+    elif compression not in ['gz', 'bz2', 'xz', 'zstd']:
       compression = ''
     if compression == 'xz':
       # Python 2 does not support lzma, our py3 support is terrible so let's
@@ -301,6 +310,20 @@ class TarFileWriter(object):
         raise self.Error('Cannot handle .xz and .lzma compression: '
                          'xzcat not found.')
       p = subprocess.Popen('cat %s | xzcat' % tar,
+                           shell=True,
+                           stdout=subprocess.PIPE)
+      f = io.BytesIO(p.stdout.read())
+      p.wait()
+      intar = tarfile.open(fileobj=f, mode='r:')
+    elif compression == 'zstd':
+      # Handle zstd compression through zstd command line tool
+      # Note that we buffer the file in memory and it can have an important
+      # memory footprint but it's probably fine as we don't use them for really
+      # large files.
+      if subprocess.call('which zstd', shell=True, stdout=subprocess.PIPE):
+        raise self.Error('Cannot handle .zstd compression: '
+                         'zstd command not found.')
+      p = subprocess.Popen('zstd -dc %s' % tar,
                            shell=True,
                            stdout=subprocess.PIPE)
       f = io.BytesIO(p.stdout.read())
@@ -378,6 +401,19 @@ class TarFileWriter(object):
     # Close the gzip file object if necessary.
     if self.fileobj:
       self.fileobj.close()
+    
+    if self.zstd:
+      # Support zstd compression through zstd command line tool
+      # Following same pattern as xz to maintain no-external-dependencies principle
+      if subprocess.call('which zstd', shell=True, stdout=subprocess.PIPE):
+        raise self.Error('Cannot handle .zstd compression: '
+                         'zstd command not found.')
+      subprocess.call(
+          'mv {0} {0}.d && zstd -z -{1} {0}.d && mv {0}.d.zst {0}'.format(
+              self.name, self.zstd_compression_level),
+          shell=True,
+          stdout=subprocess.PIPE)
+    
     if self.xz:
       # Support xz compression through xz... until we can use Py3
       if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
@@ -410,11 +446,12 @@ class TarFile(object):
 
   def __init__(self, output, directory, root_directory,
                default_mtime, enable_mtime_preservation,
-               force_posixpath, gzip_compression_level):
+               force_posixpath, gzip_compression_level, zstd_compression_level=3, compression='gz'):
     self.directory = directory
     self.output = output
-    self.compression = "gz"
+    self.compression = compression
     self.gzip_compression_level = gzip_compression_level
+    self.zstd_compression_level = zstd_compression_level
     self.root_directory = root_directory
     self.default_mtime = default_mtime
     self.enable_mtime_preservation = enable_mtime_preservation
@@ -425,6 +462,7 @@ class TarFile(object):
         self.output,
         self.compression,
         self.gzip_compression_level,
+        self.zstd_compression_level,
         self.root_directory,
         self.default_mtime,
         self.enable_mtime_preservation,
@@ -678,7 +716,8 @@ def main(FLAGS):
   with TarFile(FLAGS.output, FLAGS.directory,
                FLAGS.root_directory, FLAGS.mtime,
                FLAGS.enable_mtime_preservation,
-               FLAGS.force_posixpath, FLAGS.gzip_compression_level) as output:
+               FLAGS.force_posixpath, FLAGS.gzip_compression_level,
+               FLAGS.zstd_compression_level, FLAGS.compression) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
@@ -751,7 +790,7 @@ if __name__ == '__main__':
 
   def validate_link(l):
     if not all([value.find(':') > 0 for value in l]):
-      raise argparse.ArgumentTypeError(msg)
+      raise argparse.ArgumentTypeError("Link must be in format 'source:target'")
     return l
 
   parser.add_argument('--link', type=validate_link, default=[], action='append',
@@ -788,6 +827,12 @@ if __name__ == '__main__':
 
   parser.add_argument('--gzip_compression_level', type=int, default=9,
     help='Set the gzip compression level to use.')
+
+  parser.add_argument('--zstd_compression_level', type=int, default=3,
+    help='Set the zstd compression level to use (1-22).')
+
+  parser.add_argument('--compression', type=str, default='gz',
+    help='Set the compression type: gz, bz2, xz, lzma, zstd, or empty string for no compression.')
 
   main(parser.parse_args())
 
