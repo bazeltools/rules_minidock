@@ -77,7 +77,22 @@ def _magic_path(ctx, f, output_layer):
 
 def __container_data_impl(
         ctx):
-    layer = ctx.actions.declare_file("%s.tgz" % ctx.attr.name)
+    # Determine file extension based on compression type
+    compression = ctx.attr.compression
+    if compression == "gz" or compression == "tgz":
+        ext = ".tgz"
+    elif compression == "bz2" or compression == "bzip2":
+        ext = ".tar.bz2"
+    elif compression == "xz":
+        ext = ".tar.xz"
+    elif compression == "lzma":
+        ext = ".tar.lzma"
+    elif compression == "zstd":
+        ext = ".tar.zst"
+    else:
+        ext = ".tar"
+    
+    layer = ctx.actions.declare_file("%s%s" % (ctx.attr.name, ext))
 
     files = ctx.files.files
     args = ctx.actions.args()
@@ -97,6 +112,8 @@ def __container_data_impl(
     ctx.actions.write(manifest_file, json.encode(manifest))
     args.add(manifest_file, format = "--manifest=%s")
     args.add(ctx.attr.gzip_compression_level, format = "--gzip_compression_level=%s")
+    args.add(ctx.attr.zstd_compression_level, format = "--zstd_compression_level=%s")
+    args.add(compression, format = "--compression=%s")
     args.add(ctx.attr.mtime, format = "--mtime=%s")
 
     ctx.actions.run(
@@ -151,6 +168,14 @@ container_data = rule(
         "gzip_compression_level": attr.int(
             default=9,
             doc = "The gzip compression level to use when making .tar.gz outputs, use low effort for already compressed things like jars"
+        ),
+        "zstd_compression_level": attr.int(
+            default=3,
+            doc = "The zstd compression level to use when making .tar.zst outputs (1-22)"
+        ),
+        "compression": attr.string(
+            default="gz",
+            doc = "Compression format: gz, bz2, xz, lzma, zstd, or '' for no compression"
         ),
         "files": attr.label_list(
             allow_files = True,
