@@ -141,7 +141,7 @@ container_data = rule(
     attrs = {
         "_build_tar": attr.label(
             default = Label("//minidock/container_data_tools:build_tar"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "data_path": attr.string(

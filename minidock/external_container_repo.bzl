@@ -60,7 +60,7 @@ external_container_repo = repository_rule(
             doc = "Digest of the container image.",
         ),
         "puller": attr.label(
-            cfg = "host",
+            cfg = "exec",
             default = "@rules_minidock__puller_app//:exe",
             doc = "Override generated based on settings option to fetch metadata",
         ),
@@ -77,7 +77,7 @@ external_container_repo = repository_rule(
             doc = "Architecture.",
         ),
         "authentication_helper": attr.label(
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
             mandatory = False
