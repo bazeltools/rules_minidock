@@ -84,7 +84,7 @@ container_assemble = rule(
         ),
         "merger": attr.label(
             default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:merge_app",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
     },

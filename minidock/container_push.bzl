@@ -144,12 +144,12 @@ container_push = rule(
         ),
         "pusher": attr.label(
             default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:pusher_app",
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
         ),
         "authentication_helper": attr.label(
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_files = True,
             mandatory = False
