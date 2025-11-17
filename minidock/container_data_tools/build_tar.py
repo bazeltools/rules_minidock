@@ -30,7 +30,7 @@ import sys
 import re
 import tarfile
 import tempfile
-
+import shutil
 
 
 
@@ -605,17 +605,21 @@ class TarFile(object):
   def write_temp_file(self, data, suffix='tar', mode='wb'):
     # deb(5) states members may optionally be compressed with gzip or xz
     if suffix.endswith('.gz'):
-      with gzip.GzipFile(fileobj=io.BytesIO(data)) as f:
-        data = f.read()
-      suffix = suffix[:-3]
-
-    (_, tmpfile) = tempfile.mkstemp(suffix=suffix)
-    try:
-      with open(tmpfile, mode=mode) as f:
-        f.write(data)
-      yield tmpfile
-    finally:
-      os.remove(tmpfile)
+        suffix = suffix[:-3]
+        (_, tmpfile) = tempfile.mkstemp(suffix=suffix)
+        with gzip.GzipFile(fileobj=io.BytesIO(data)) as gz, open(tmpfile, mode=mode) as out:
+            shutil.copyfileobj(gz, out)
+        yield tmpfile
+        os.remove(tmpfile)
+    else:
+        # Non-compressed case: write data directly to temp file
+        (_, tmpfile) = tempfile.mkstemp(suffix=suffix)
+        try:
+            with open(tmpfile, mode=mode) as f:
+                f.write(data)
+            yield tmpfile
+        finally:
+            os.remove(tmpfile)
 
   def add_pkg_metadata(self, metadata_tar, deb):
     try:
