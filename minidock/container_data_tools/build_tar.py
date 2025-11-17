@@ -405,24 +405,67 @@ class TarFileWriter(object):
     if self.zstd:
       # Support zstd compression through zstd command line tool
       # Following same pattern as xz to maintain no-external-dependencies principle
-      if subprocess.call('which zstd', shell=True, stdout=subprocess.PIPE):
+      if subprocess.call(['which', 'zstd'], stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         raise self.Error('Cannot handle .zstd compression: '
                          'zstd command not found.')
-      subprocess.call(
-          'mv {0} {0}.d && zstd -z -{1} {0}.d && mv {0}.d.zst {0}'.format(
-              self.name, self.zstd_compression_level),
-          shell=True,
-          stdout=subprocess.PIPE)
+
+      # Hybrid approach: use optimized method for files < 500MB, original for larger files
+      file_size = os.path.getsize(self.name)
+      threshold = 500 * 1024 * 1024  # 500MB
+
+      if file_size < threshold:
+        # Optimized: let zstd operate directly on file (better for small/medium files)
+        temp_name = self.name + '.tmp'
+        try:
+          subprocess.run(
+              ['zstd', '-z', f'-{self.zstd_compression_level}', self.name, '-o', temp_name],
+              check=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE
+          )
+          os.replace(temp_name, self.name)
+        finally:
+          if os.path.exists(temp_name):
+            os.remove(temp_name)
+      else:
+        # Original approach for very large files (better performance for 500MB+)
+        subprocess.call(
+            'mv {0} {0}.d && zstd -z -{1} {0}.d && mv {0}.d.zst {0}'.format(
+                self.name, self.zstd_compression_level),
+            shell=True,
+            stdout=subprocess.PIPE)
     
     if self.xz:
       # Support xz compression through xz... until we can use Py3
-      if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
+      if subprocess.call(['which', 'xz'], stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         raise self.Error('Cannot handle .xz and .lzma compression: '
                          'xz not found.')
-      subprocess.call(
-          'mv {0} {0}.d && xz -z {0}.d && mv {0}.d.xz {0}'.format(self.name),
-          shell=True,
-          stdout=subprocess.PIPE)
+
+      # Hybrid approach: use optimized method for files < 500MB, original for larger files
+      file_size = os.path.getsize(self.name)
+      threshold = 500 * 1024 * 1024  # 500MB
+
+      if file_size < threshold:
+        # Optimized: let xz operate directly on file (better for small/medium files)
+        temp_name = self.name + '.tmp'
+        try:
+          with open(temp_name, 'wb') as outfile:
+            subprocess.run(
+                ['xz', '-z', '-c', self.name],
+                stdout=outfile,
+                check=True,
+                stderr=subprocess.PIPE
+            )
+          os.replace(temp_name, self.name)
+        finally:
+          if os.path.exists(temp_name):
+            os.remove(temp_name)
+      else:
+        # Original approach for very large files (better performance for 500MB+)
+        subprocess.call(
+            'mv {0} {0}.d && xz -z {0}.d && mv {0}.d.xz {0}'.format(self.name),
+            shell=True,
+            stdout=subprocess.PIPE)
 
 
 
