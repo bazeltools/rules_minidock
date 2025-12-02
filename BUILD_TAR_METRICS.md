@@ -19,9 +19,9 @@ Or inline:
 BUILD_TAR_METRICS=1 python minidock/container_data_tools/build_tar.py [your arguments...]
 ```
 
-### Output to File
+### Output Location
 
-By default, metrics are written to **stderr**. To write metrics to a file instead, use the `--metrics_output` parameter:
+By default (when `--metrics_output` is not specified), metrics are written to **stderr**. To write metrics to a dedicated file instead, use the `--metrics_output` parameter:
 
 ```bash
 BUILD_TAR_METRICS=1 python minidock/container_data_tools/build_tar.py \
@@ -30,10 +30,10 @@ BUILD_TAR_METRICS=1 python minidock/container_data_tools/build_tar.py \
   --metrics_output=metrics.log
 ```
 
-This is useful when:
+When `--metrics_output` is specified, all metrics are written exclusively to the specified file (not stderr). This is useful when:
 - You want to separate metrics from regular stderr output
 - You need to parse metrics programmatically
-- You're running in a Bazel build and want to preserve metrics logs
+- You're running in a Bazel build and want to preserve metrics logs as build artifacts
 
 ### Using with Bazel (`container_data` rule)
 
@@ -88,7 +88,11 @@ The metrics system tracks timing for:
 
 ## Output Format
 
-Metrics are written to **stderr** in real-time as operations complete:
+When `BUILD_TAR_METRICS=1` is set, metrics are logged in real-time as operations complete. The output destination depends on whether `--metrics_output` is specified:
+- **Without `--metrics_output`**: Metrics are written to stderr
+- **With `--metrics_output`**: Metrics are written to the specified file
+
+Example output format:
 
 ```
 [BUILD_TAR_METRIC] TarFile.__init__: 0.0023s
@@ -126,7 +130,7 @@ The summary is sorted by total time (descending), so the most expensive operatio
 ## Example
 
 ```bash
-# Run with metrics enabled (output to stderr)
+# Run with metrics enabled (output to stderr by default)
 BUILD_TAR_METRICS=1 bazel build //your:target 2>&1 | grep BUILD_TAR_METRIC
 
 # Or if running the script directly with stderr output
@@ -136,14 +140,14 @@ BUILD_TAR_METRICS=1 python minidock/container_data_tools/build_tar.py \
   --compression=gz \
   2>&1 | tee metrics.log
 
-# Run with metrics output to a dedicated file
+# Run with metrics output to a dedicated file (not stderr)
 BUILD_TAR_METRICS=1 python minidock/container_data_tools/build_tar.py \
   --output=out.tar.gz \
   --file=myfile.txt=/dest/path.txt \
   --compression=gz \
   --metrics_output=build_metrics.log
 
-# Then view the metrics
+# Then view the metrics file
 cat build_metrics.log
 ```
 
