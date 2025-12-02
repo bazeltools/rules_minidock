@@ -30,8 +30,89 @@ import sys
 import re
 import tarfile
 import tempfile
+import time
 
 
+# Performance monitoring utilities
+# Enable via BUILD_TAR_METRICS=1 environment variable
+_METRICS_ENABLED = os.environ.get('BUILD_TAR_METRICS', '0') == '1'
+_metrics_data = {}
+_metrics_file = None  # File handle for metrics output (if specified)
+
+
+def _log_metric(message):
+  """Log metric to file (if specified) or stderr."""
+  if _METRICS_ENABLED:
+    output = _metrics_file if _metrics_file else sys.stderr
+    output.write(f"[BUILD_TAR_METRIC] {message}\n")
+    output.flush()
+
+
+def timing_decorator(func):
+  """Decorator to measure and log execution time of methods."""
+  @functools.wraps(func)
+  def wrapper(*args, **kwargs):
+    if not _METRICS_ENABLED:
+      return func(*args, **kwargs)
+
+    func_name = f"{args[0].__class__.__name__}.{func.__name__}" if args and hasattr(args[0], '__class__') else func.__name__
+    start_time = time.perf_counter()
+    try:
+      result = func(*args, **kwargs)
+      return result
+    finally:
+      elapsed = time.perf_counter() - start_time
+      if func_name not in _metrics_data:
+        _metrics_data[func_name] = {'count': 0, 'total_time': 0.0, 'min': float('inf'), 'max': 0.0}
+      _metrics_data[func_name]['count'] += 1
+      _metrics_data[func_name]['total_time'] += elapsed
+      _metrics_data[func_name]['min'] = min(_metrics_data[func_name]['min'], elapsed)
+      _metrics_data[func_name]['max'] = max(_metrics_data[func_name]['max'], elapsed)
+      _log_metric(f"{func_name}: {elapsed:.4f}s")
+  return wrapper
+
+
+@contextmanager
+def timing_context(name):
+  """Context manager for timing specific code blocks."""
+  if not _METRICS_ENABLED:
+    yield
+    return
+
+  start_time = time.perf_counter()
+  try:
+    yield
+  finally:
+    elapsed = time.perf_counter() - start_time
+    if name not in _metrics_data:
+      _metrics_data[name] = {'count': 0, 'total_time': 0.0, 'min': float('inf'), 'max': 0.0}
+    _metrics_data[name]['count'] += 1
+    _metrics_data[name]['total_time'] += elapsed
+    _metrics_data[name]['min'] = min(_metrics_data[name]['min'], elapsed)
+    _metrics_data[name]['max'] = max(_metrics_data[name]['max'], elapsed)
+    _log_metric(f"{name}: {elapsed:.4f}s")
+
+
+def print_metrics_summary():
+  """Print summary of all collected metrics."""
+  if not _METRICS_ENABLED or not _metrics_data:
+    return
+
+  _log_metric("=" * 80)
+  _log_metric("PERFORMANCE SUMMARY")
+  _log_metric("=" * 80)
+
+  # Sort by total time
+  sorted_metrics = sorted(_metrics_data.items(), key=lambda x: x[1]['total_time'], reverse=True)
+
+  _log_metric(f"{'Operation':<50} {'Count':>8} {'Total(s)':>10} {'Avg(s)':>10} {'Min(s)':>10} {'Max(s)':>10}")
+  _log_metric("-" * 80)
+
+  for name, data in sorted_metrics:
+    avg_time = data['total_time'] / data['count'] if data['count'] > 0 else 0
+    _log_metric(f"{name:<50} {data['count']:>8} {data['total_time']:>10.4f} {avg_time:>10.4f} {data['min']:>10.4f} {data['max']:>10.4f}")
+
+  _log_metric("=" * 80)
 
 
 
@@ -42,6 +123,7 @@ class TarFileWriter(object):
   class Error(Exception):
     pass
 
+  @timing_decorator
   def __init__(self,
                name,
                compression='',
@@ -104,6 +186,7 @@ class TarFileWriter(object):
   def __exit__(self, t, v, traceback):
     self.close()
 
+  @timing_decorator
   def add_dir(self,
               name,
               path,
@@ -172,6 +255,7 @@ class TarFileWriter(object):
                     mtime=mtime,
                     mode=mode)
 
+  @timing_decorator
   def _addfile(self, info, fileobj=None):
     """Add a file in the tar file if there is no conflict."""
     if not info.name.endswith('/') and info.type == tarfile.DIRTYPE:
@@ -184,6 +268,7 @@ class TarFileWriter(object):
       print('Duplicate file in archive: %s, '
             'picking first occurrence' % info.name)
 
+  @timing_decorator
   def add_file(self,
                name,
                kind=tarfile.REGTYPE,
@@ -262,6 +347,7 @@ class TarFileWriter(object):
         self.directories.add(name)
       self._addfile(tarinfo)
 
+  @timing_decorator
   def add_tar(self,
               tar,
               rootuid=None,
@@ -391,6 +477,7 @@ class TarFileWriter(object):
           self._addfile(tarinfo)
     intar.close()
 
+  @timing_decorator
   def close(self):
     """Close the output tar file.
     This class should not be used anymore after calling that method.
@@ -408,21 +495,23 @@ class TarFileWriter(object):
       if subprocess.call('which zstd', shell=True, stdout=subprocess.PIPE):
         raise self.Error('Cannot handle .zstd compression: '
                          'zstd command not found.')
-      subprocess.call(
-          'mv {0} {0}.d && zstd -z -{1} {0}.d && mv {0}.d.zst {0}'.format(
-              self.name, self.zstd_compression_level),
-          shell=True,
-          stdout=subprocess.PIPE)
+      with timing_context('zstd_compression'):
+        subprocess.call(
+            'mv {0} {0}.d && zstd --threads=0 -z -{1} {0}.d && mv {0}.d.zst {0}'.format(
+                self.name, self.zstd_compression_level),
+            shell=True,
+            stdout=subprocess.PIPE)
     
     if self.xz:
       # Support xz compression through xz... until we can use Py3
       if subprocess.call('which xz', shell=True, stdout=subprocess.PIPE):
         raise self.Error('Cannot handle .xz and .lzma compression: '
                          'xz not found.')
-      subprocess.call(
-          'mv {0} {0}.d && xz -z {0}.d && mv {0}.d.xz {0}'.format(self.name),
-          shell=True,
-          stdout=subprocess.PIPE)
+      with timing_context('xz_compression'):
+        subprocess.call(
+            'mv {0} {0}.d && xz -z {0}.d && mv {0}.d.xz {0}'.format(self.name),
+            shell=True,
+            stdout=subprocess.PIPE)
 
 
 
@@ -444,6 +533,7 @@ class TarFile(object):
     else:
       return os.path.basename(os.path.splitext(filename)[0])
 
+  @timing_decorator
   def __init__(self, output, directory, root_directory,
                default_mtime, enable_mtime_preservation,
                force_posixpath, gzip_compression_level, zstd_compression_level=3, compression='gz'):
@@ -472,6 +562,7 @@ class TarFile(object):
   def __exit__(self, t, v, traceback):
     self.tarfile.close()
 
+  @timing_decorator
   def add_file(self, f, destfile, mode=None, ids=None, names=None):
     """Add a file to the tar file.
 
@@ -507,6 +598,7 @@ class TarFile(object):
         uname=names[0],
         gname=names[1])
 
+  @timing_decorator
   def add_empty_file(self, destfile, mode=None, ids=None, names=None,
                      kind=tarfile.REGTYPE):
     """Add a file to the tar file.
@@ -573,6 +665,7 @@ class TarFile(object):
         destpath, mode=mode, ids=ids, names=names)
     self.tarfile.root_directory = original_root_directory
 
+  @timing_decorator
   def add_tar(self, tar):
     """Merge a tar file into the destination tar file.
 
@@ -617,6 +710,7 @@ class TarFile(object):
     finally:
       os.remove(tmpfile)
 
+  @timing_decorator
   def add_pkg_metadata(self, metadata_tar, deb):
     try:
       with tarfile.open(metadata_tar) as tar:
@@ -636,6 +730,7 @@ class TarFile(object):
       raise self.DebError('Unknown Exception {0}. Please report an issue at'
                           ' github.com/bazelbuild/rules_docker.'.format(e))
 
+  @timing_decorator
   def add_deb(self, deb):
     """Extract a debian package in the output tar.
 
@@ -675,86 +770,108 @@ class TarFile(object):
       raise self.DebError(deb + ' does not contains a control file!')
 
 def main(FLAGS):
-  # Parse modes arguments
-  default_mode = None
-  if FLAGS.mode:
-    # Convert from octal
-    default_mode = int(FLAGS.mode, 8)
+  global _metrics_file
+  start_time = time.perf_counter()
 
-  mode_map = {}
-  if FLAGS.modes:
-    for filemode in FLAGS.modes:
-      (f, mode) = filemode.split('=', 1)
-      if f[0] == '/':
-        f = f[1:]
-      mode_map[f] = int(mode, 8)
+  # Open metrics output file if specified
+  if FLAGS.metrics_output:
+    _metrics_file = open(FLAGS.metrics_output, 'w')
+  
+  try:
+    # Parse modes arguments
+    default_mode = None
+    if FLAGS.mode:
+      # Convert from octal
+      default_mode = int(FLAGS.mode, 8)
 
-  default_ownername = ('', '')
-  if FLAGS.owner_name:
-    default_ownername = FLAGS.owner_name.split('.', 1)
-  names_map = {}
-  if FLAGS.owner_names:
-    for file_owner in FLAGS.owner_names:
-      (f, owner) = file_owner.split('=', 1)
-      (user, group) = owner.split('.', 1)
-      if f[0] == '/':
-        f = f[1:]
-      names_map[f] = (user, group)
+    mode_map = {}
+    if FLAGS.modes:
+      for filemode in FLAGS.modes:
+        (f, mode) = filemode.split('=', 1)
+        if f[0] == '/':
+          f = f[1:]
+        mode_map[f] = int(mode, 8)
 
-  default_ids = FLAGS.owner.split('.', 1)
-  default_ids = (int(default_ids[0]), int(default_ids[1]))
-  ids_map = {}
-  if FLAGS.owners:
-    for file_owner in FLAGS.owners:
-      (f, owner) = file_owner.split('=', 1)
-      (user, group) = owner.split('.', 1)
-      if f[0] == '/':
-        f = f[1:]
-      ids_map[f] = (int(user), int(group))
+    default_ownername = ('', '')
+    if FLAGS.owner_name:
+      default_ownername = FLAGS.owner_name.split('.', 1)
+    names_map = {}
+    if FLAGS.owner_names:
+      for file_owner in FLAGS.owner_names:
+        (f, owner) = file_owner.split('=', 1)
+        (user, group) = owner.split('.', 1)
+        if f[0] == '/':
+          f = f[1:]
+        names_map[f] = (user, group)
 
-  # Add objects to the tar file
-  with TarFile(FLAGS.output, FLAGS.directory,
-               FLAGS.root_directory, FLAGS.mtime,
-               FLAGS.enable_mtime_preservation,
-               FLAGS.force_posixpath, FLAGS.gzip_compression_level,
-               FLAGS.zstd_compression_level, FLAGS.compression) as output:
-    def file_attributes(filename):
-      if filename.startswith('/'):
-        filename = filename[1:]
-      return {
-          'mode': mode_map.get(filename, default_mode),
-          'ids': ids_map.get(filename, default_ids),
-          'names': names_map.get(filename, default_ownername),
-      }
+    default_ids = FLAGS.owner.split('.', 1)
+    default_ids = (int(default_ids[0]), int(default_ids[1]))
+    ids_map = {}
+    if FLAGS.owners:
+      for file_owner in FLAGS.owners:
+        (f, owner) = file_owner.split('=', 1)
+        (user, group) = owner.split('.', 1)
+        if f[0] == '/':
+          f = f[1:]
+        ids_map[f] = (int(user), int(group))
 
-    if FLAGS.manifest:
-      with open(FLAGS.manifest, 'r') as f:
-        manifest = json.load(f)
-        for f in manifest.get('files', []):
-          output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
-        for f in manifest.get('empty_files', []):
+    # Add objects to the tar file
+    with TarFile(FLAGS.output, FLAGS.directory,
+                 FLAGS.root_directory, FLAGS.mtime,
+                 FLAGS.enable_mtime_preservation,
+                 FLAGS.force_posixpath, FLAGS.gzip_compression_level,
+                 FLAGS.zstd_compression_level, FLAGS.compression) as output:
+      def file_attributes(filename):
+        if filename.startswith('/'):
+          filename = filename[1:]
+        return {
+            'mode': mode_map.get(filename, default_mode),
+            'ids': ids_map.get(filename, default_ids),
+            'names': names_map.get(filename, default_ownername),
+        }
+
+      if FLAGS.manifest:
+        with timing_context('process_manifest'):
+          with open(FLAGS.manifest, 'r') as f:
+            manifest = json.load(f)
+            for f in manifest.get('files', []):
+              output.add_file(f['src'], f['dst'], **file_attributes(f['dst']))
+            for f in manifest.get('empty_files', []):
+              output.add_empty_file(f, **file_attributes(f))
+            for d in manifest.get('empty_dirs', []):
+              output.add_empty_dir(d, **file_attributes(d))
+            for d in manifest.get('empty_root_dirs', []):
+              output.add_empty_root_dir(d, **file_attributes(d))
+            for f in manifest.get('symlinks', []):
+              output.add_link(f['linkname'], f['target'])
+            for tar in manifest.get('tars', []):
+              output.add_tar(tar)
+
+      with timing_context('process_files'):
+        for f in FLAGS.file:
+          (inf, tof) = f.split('=', 1)
+          output.add_file(inf, tof, **file_attributes(tof))
+        for f in FLAGS.empty_file:
           output.add_empty_file(f, **file_attributes(f))
-        for d in manifest.get('empty_dirs', []):
-          output.add_empty_dir(d, **file_attributes(d))
-        for d in manifest.get('empty_root_dirs', []):
-          output.add_empty_root_dir(d, **file_attributes(d))
-        for f in manifest.get('symlinks', []):
-          output.add_link(f['linkname'], f['target'])
-        for tar in manifest.get('tars', []):
-          output.add_tar(tar)
+        for f in FLAGS.empty_dir:
+          output.add_empty_dir(f, **file_attributes(f))
 
-    for f in FLAGS.file:
-      (inf, tof) = f.split('=', 1)
-      output.add_file(inf, tof, **file_attributes(tof))
-    for f in FLAGS.empty_file:
-      output.add_empty_file(f, **file_attributes(f))
-    for f in FLAGS.empty_dir:
-      output.add_empty_dir(f, **file_attributes(f))
-    for tar in FLAGS.tar:
-      output.add_tar(tar)
-    for link in FLAGS.link:
-      l = link.split(':', 1)
-      output.add_link(l[0], l[1])
+      with timing_context('process_tars'):
+        for tar in FLAGS.tar:
+          output.add_tar(tar)
+      for link in FLAGS.link:
+        l = link.split(':', 1)
+        output.add_link(l[0], l[1])
+
+    # Print metrics summary if enabled
+    total_time = time.perf_counter() - start_time
+    if _METRICS_ENABLED:
+      _log_metric(f"Total execution time: {total_time:.4f}s")
+    print_metrics_summary()
+  finally:
+    # Close metrics file if it was opened
+    if _metrics_file:
+      _metrics_file.close()
 
 
 if __name__ == '__main__':
@@ -833,6 +950,9 @@ if __name__ == '__main__':
 
   parser.add_argument('--compression', type=str, default='gz',
     help='Set the compression type: gz, bz2, xz, lzma, zstd, or empty string for no compression.')
+
+  parser.add_argument('--metrics_output', type=str, default=None,
+    help='Optional file path to write performance metrics to (instead of stderr).')
 
   main(parser.parse_args())
 

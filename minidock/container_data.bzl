@@ -116,12 +116,26 @@ def __container_data_impl(
     args.add(compression, format = "--compression=%s")
     args.add(ctx.attr.mtime, format = "--mtime=%s")
 
+    # Conditionally declare metrics output file
+    metrics_file = None
+    action_env = {}
+    outputs = [layer]
+    output_files = [layer]
+
+    if ctx.attr.build_tar_metrics:
+        metrics_file = ctx.actions.declare_file(ctx.attr.name + "-layer.metrics")
+        args.add(metrics_file, format = "--metrics_output=%s")
+        action_env["BUILD_TAR_METRICS"] = "1"
+        outputs.append(metrics_file)
+        output_files.append(metrics_file)
+
     ctx.actions.run(
         executable = ctx.executable._build_tar,
         arguments = [args],
         inputs = ctx.files.tars + [manifest_file] + files,
-        outputs = [layer],
-        use_default_shell_env = True,
+        outputs = outputs,
+        env = action_env,
+        use_default_shell_env = False,
         mnemonic = "ContainerData",
     )
     return [
@@ -133,7 +147,7 @@ def __container_data_impl(
         config = None,
     ),
      DefaultInfo(
-            files = depset([layer]),
+            files = depset(output_files),
         ),
     ]
 
@@ -207,6 +221,10 @@ container_data = rule(
             doc = """Tar file to extract in the layer.
 
         A list of tar files whose content should be in the Docker image.""",
+        ),
+        "build_tar_metrics": attr.bool(
+            default = False,
+            doc = "Enable performance metrics collection. When enabled, creates a {name}-layer.metrics file with detailed timing information.",
         ),
     },
     implementation = __container_data_impl,
