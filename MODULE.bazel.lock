@@ -139,7 +139,7 @@
     "//minidock/remote_tools:extensions.bzl%minidock_tools": {
       "general": {
         "bzlTransitiveDigest": "w8Kwop+r8s/2VJLi7uBF9UyZi7oWXNu9mHyF6RMl66U=",
-        "usagesDigest": "H2eu8GjlcjMeIOd+rwvb3NJt/jwK6EDa1aDevlSAUb8=",
+        "usagesDigest": "xv3rIQiTuhzToRHap/w6TzXiEIsKENp5LMJ+mKcUaC4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},

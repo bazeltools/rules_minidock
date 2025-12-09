@@ -10,7 +10,7 @@ These rules may not be suitable for you, they are not setup/designed to cover a 
 Add the following to your `MODULE.bazel` file:
 
 ```python
-bazel_dep(name = "rules_minidock", version = "0.0.0")
+bazel_dep(name = "rules_minidock", version = "0.1.0")
 
 # Load the minidock tools
 minidock_tools = use_extension("@rules_minidock//minidock/remote_tools:extensions.bzl", "minidock_tools")
