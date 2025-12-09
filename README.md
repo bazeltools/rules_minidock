@@ -12,14 +12,14 @@ Add the following to your `MODULE.bazel` file:
 ```python
 bazel_dep(name = "rules_minidock", version = "0.1.0")
 
-# Use git_override since rules_minidock is not published to bazel registry.
+# Use git_override since rules_minidock is not published to the Bazel registry
 git_override(
     module_name = "rules_minidock",
     remote = "https://github.com/bazeltools/rules_minidock",
     commit = "<git_commit>",
 )
 
-# Load the minidock tools
+# Load the minidock tools extension from extensions.bzl
 minidock_tools = use_extension("@rules_minidock//minidock/remote_tools:extensions.bzl", "minidock_tools")
 use_repo(
     minidock_tools,

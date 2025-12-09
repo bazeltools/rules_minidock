@@ -42,8 +42,8 @@ TEMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/tmpupdate.XXXXXXXX")"
 trap 'rm -rf "$TEMPDIR"' EXIT
 
 URL_BASE="https://github.com/${CI_UPDATE_GITHUB_ORG_AND_REPO_NAME}/releases/download/${RELEASE_TAG}"
-cat minidock/remote_tools/repositories.bzl | sed '/RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_START/,$d' > $TEMPDIR/prelude.txt
-cat minidock/remote_tools/repositories.bzl | sed '1,/RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_END/ d' > $TEMPDIR/suffix.txt
+cat minidock/remote_tools/extensions.bzl | sed '/RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_START/,$d' > $TEMPDIR/prelude.txt
+cat minidock/remote_tools/extensions.bzl | sed '1,/RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_END/ d' > $TEMPDIR/suffix.txt
 
 TOOLS="merge-app pusher-app"
 PLATFORM_OS="linux-x86_64 macos-x86_64 macos-aarch64"
@@ -100,8 +100,8 @@ cat << EOM >>$TMP_OUTPUT
 EOM
 
 
-cat $TEMPDIR/prelude.txt > minidock/remote_tools/repositories.bzl
-echo "    # RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_START" >> minidock/remote_tools/repositories.bzl
-cat $TEMPDIR/result.bzl >> minidock/remote_tools/repositories.bzl
-echo "    # RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_END" >> minidock/remote_tools/repositories.bzl
-cat $TEMPDIR/suffix.txt >> minidock/remote_tools/repositories.bzl
+cat $TEMPDIR/prelude.txt > minidock/remote_tools/extensions.bzl
+echo "    # RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_START" >> minidock/remote_tools/extensions.bzl
+cat $TEMPDIR/result.bzl >> minidock/remote_tools/extensions.bzl
+echo "    # RUST_BINARIES_AUTO_GEN_REPLACE_SECTION_END" >> minidock/remote_tools/extensions.bzl
+cat $TEMPDIR/suffix.txt >> minidock/remote_tools/extensions.bzl
