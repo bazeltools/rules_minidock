@@ -32,7 +32,7 @@ load(
     "py_binary",
 )
 
-PANDAS = "@@rules_python~0.24.0~pip~pip_310_pandas//:pkg"
+PANDAS = "@pip//pandas"
 
 compile_pip_requirements_3_10(
     name = "requirements_3_10",
