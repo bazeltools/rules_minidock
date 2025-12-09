@@ -1,0 +1,23 @@
+"""Bazel module for rules_minidock - Minimal Docker/OCI container image rules."""
+
+module(
+    name = "rules_minidock",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+# Required dependencies
+bazel_dep(name = "platforms", version = "0.0.11")
+
+# Register the toolchain extension
+minidock_tools = use_extension("//minidock/remote_tools:extensions.bzl", "minidock_tools")
+use_repo(
+    minidock_tools,
+    "rules_minidock__merge_app_linux_x86_64",
+    "rules_minidock__merge_app_macos_aarch64",
+    "rules_minidock__merge_app_macos_x86_64",
+    "rules_minidock__puller_app",
+    "rules_minidock__pusher_app_linux_x86_64",
+    "rules_minidock__pusher_app_macos_aarch64",
+    "rules_minidock__pusher_app_macos_x86_64",
+)

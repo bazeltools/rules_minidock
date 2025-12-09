@@ -38,7 +38,7 @@ def ___external_container_repo(repository_ctx):
         fail("Failed to fetch metadata: %s\nSTDOUT: %s\nSTDERR: %s" % (fetch_args, result.stdout,result.stderr))
 
     repository_ctx.file("BUILD", """package(default_visibility = ["//visibility:public"])
-load("@com_github_bazeltools_rules_minidock//minidock/internal:external_metadata.bzl", "external_metadata")
+load("@rules_minidock//minidock/internal:external_metadata.bzl", "external_metadata")
 external_metadata(
     name = "metadata",
     config = "config.json",

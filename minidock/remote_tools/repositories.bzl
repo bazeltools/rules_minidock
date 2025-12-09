@@ -1,5 +1,5 @@
-load("@com_github_bazeltools_rules_minidock//minidock/remote_tools:load_tool.bzl", "load_tool")
-load("@com_github_bazeltools_rules_minidock//minidock/remote_tools:repo_rule_load_tool.bzl", "repo_rule_load_tool")
+load("@rules_minidock//minidock/remote_tools:load_tool.bzl", "load_tool")
+load("@rules_minidock//minidock/remote_tools:repo_rule_load_tool.bzl", "repo_rule_load_tool")
 
 def load_tools():
     excludes = native.existing_rules().keys()

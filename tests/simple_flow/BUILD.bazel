@@ -1,26 +1,26 @@
 exports_files(["puller"])
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_assemble.bzl",
+    "@rules_minidock//minidock:container_assemble.bzl",
     "container_assemble",
 )
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_data.bzl",
+    "@rules_minidock//minidock:container_data.bzl",
     "container_data",
 )
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_compose.bzl",
+    "@rules_minidock//minidock:container_compose.bzl",
     "container_compose",
 )
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_push.bzl",
+    "@rules_minidock//minidock:container_push.bzl",
     "container_push",
 )
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_config.bzl",
+    "@rules_minidock//minidock:container_config.bzl",
     "container_config",
 )
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_binary.bzl",
+    "@rules_minidock//minidock:container_binary.bzl",
     "container_binary",
 )
 load(

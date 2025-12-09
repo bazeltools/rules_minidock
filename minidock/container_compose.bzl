@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "ExternalContainerConfig")
+load("@rules_minidock//minidock:providers.bzl", "ContainerInfo", "ExternalContainerConfig")
 
 
 def __copy_provider_with(current, parent):

@@ -1,5 +1,5 @@
 build_file_template = """
-load("@com_github_bazeltools_rules_minidock//minidock/remote_tools:wrap_executable.bzl", "wrap_executable")
+load("@rules_minidock//minidock/remote_tools:wrap_executable.bzl", "wrap_executable")
 exports_files(["exe"])
 wrap_executable(
     name = "{name}",

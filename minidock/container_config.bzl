@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo")
+load("@rules_minidock//minidock:providers.bzl", "ContainerInfo")
 
 def __expand_env(ctx, env):
     env_lst = None

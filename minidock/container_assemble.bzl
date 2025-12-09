@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo", "ManifestResult", "AssembledData", "ExternalContainerConfig", "container_info_struct")
+load("@rules_minidock//minidock:providers.bzl", "ContainerInfo", "ManifestResult", "AssembledData", "ExternalContainerConfig", "container_info_struct")
 
 
 launcher_template = """
@@ -83,7 +83,7 @@ container_assemble = rule(
             doc = "The label of the image to push.",
         ),
         "merger": attr.label(
-            default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:merge_app",
+            default = "@rules_minidock//minidock/remote_tools:merge_app",
             cfg = "exec",
             executable = True,
         ),
