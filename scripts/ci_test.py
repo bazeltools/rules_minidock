@@ -4,15 +4,17 @@ import json
 import os
 import subprocess
 
-os.chdir("tests/simple_flow")
+# Use the bazel wrapper script
+BAZEL = "./bazel"
 
-subprocess.run(["bazel", "clean", "--expunge"], check=True)
-subprocess.run(["bazel", "build", "..."], check=True)
+# Run from root directory instead of changing into test directories
+subprocess.run([BAZEL, "clean", "--expunge"], check=True)
+subprocess.run([BAZEL, "build", "//tests/simple_flow/..."], check=True)
 
-with open("bazel-bin/test_assemble_simple_merger_manifest.json", "rb") as f:
+with open("bazel-bin/tests/simple_flow/test_assemble_simple_merger_manifest.json", "rb") as f:
     SHA_A = subprocess.run(["shasum", "-a", "256"], stdin=f, capture_output=True, check=True).stdout.strip()
 
-with open("bazel-bin/test_assemble_simple_merger_config.json") as json_file:
+with open("bazel-bin/tests/simple_flow/test_assemble_simple_merger_config.json") as json_file:
     data = json.load(json_file)
 
 cmd = data["config"]["Cmd"]
@@ -40,10 +42,10 @@ assert("ENV1=FOO" in env)
 assert("ENV2=BAR" in env)
 assert("EXTERNALENV1=extenv1" in env)
 
-subprocess.run(["bazel", "clean", "--expunge"], check=True)
-subprocess.run(["bazel", "build", "..."], check=True)
+subprocess.run([BAZEL, "clean", "--expunge"], check=True)
+subprocess.run([BAZEL, "build", "//tests/simple_flow/..."], check=True)
 
-with open("bazel-bin/test_assemble_simple_merger_manifest.json", "rb") as f:
+with open("bazel-bin/tests/simple_flow/test_assemble_simple_merger_manifest.json", "rb") as f:
     SHA_B = subprocess.run(["shasum", "-a", "256"], stdin=f, capture_output=True, check=True).stdout.strip()
 
 if SHA_A != SHA_B:
@@ -54,8 +56,5 @@ if SHA_A != SHA_B:
 else:
     print(f"[ok] SHA256 matched {SHA_A}")
 
-# Navigate to tests/override_tools
-os.chdir("../../tests/override_tools")
-
-# Run bazel query ...
-subprocess.run(["bazel", "query", "..."], check=True)
+# Run bazel query for override_tools
+subprocess.run([BAZEL, "query", "//tests/override_tools/..."], check=True)

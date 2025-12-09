@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "ContainerInfo")
+load("@rules_minidock//minidock:providers.bzl", "ContainerInfo")
 
 # Probably should nuke these/include them in whatever app produces the tar ball? -- these are from rules_docker
 def _join_path(directory, path):

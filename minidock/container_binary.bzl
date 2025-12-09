@@ -1,9 +1,9 @@
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_data.bzl",
+    "@rules_minidock//minidock:container_data.bzl",
     "container_data",
 )
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_compose.bzl",
+    "@rules_minidock//minidock:container_compose.bzl",
     "container_compose",
 )
 
@@ -104,7 +104,7 @@ def container_binary(
         name,
         binary,
         binary_name = None,
-        app_launch_template_script = "@com_github_bazeltools_rules_minidock//minidock:app_launch_template"):
+        app_launch_template_script = "@rules_minidock//minidock:app_launch_template"):
     if binary_name == None:
         binary_name = name
     launcher_name = "%s.launcher" % name

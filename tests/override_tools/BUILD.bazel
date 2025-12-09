@@ -1,20 +1,20 @@
 exports_files(["puller"])
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_assemble.bzl",
+    "@rules_minidock//minidock:container_assemble.bzl",
     "container_assemble",
 )
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_data.bzl",
+    "@rules_minidock//minidock:container_data.bzl",
     "container_data",
 )
 
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_compose.bzl",
+    "@rules_minidock//minidock:container_compose.bzl",
     "container_compose",
 )
 
 load(
-    "@com_github_bazeltools_rules_minidock//minidock:container_push.bzl",
+    "@rules_minidock//minidock:container_push.bzl",
     "container_push",
 )
 
@@ -37,7 +37,8 @@ container_compose(
 container_assemble(
     name = "test_assemble_simple",
     composed = ":test_simple_imagen",
-    merger = "//merger:merger",
+    merger = "//tests/override_tools/merger:merger",
+    tags = ["manual"],  # Stub implementation - excluded from wildcard builds
 )
 
 container_push(
@@ -47,5 +48,6 @@ container_push(
     registry = "http://localhost:9000",
     repository = "docker/test",
     container_tags = ["unchanged_tag1"],
-    pusher = "//pusher:pusher",
+    pusher = "//tests/override_tools/pusher:pusher",
+    tags = ["manual"],  # Stub implementation - excluded from wildcard builds
 )

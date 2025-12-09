@@ -1,0 +1,42 @@
+"""Bazel module for rules_minidock - Minimal Docker/OCI container image rules."""
+
+module(
+    name = "rules_minidock",
+    version = "0.1.0",
+    compatibility_level = 1,
+)
+
+# Required dependencies
+bazel_dep(name = "platforms", version = "0.0.11")
+
+# Test dependencies
+bazel_dep(name = "rules_python", version = "0.40.0", dev_dependency = True)
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
+python.toolchain(python_version = "3.10")
+use_repo(python, "python_versions")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
+pip.parse(
+    hub_name = "pip",
+    python_version = "3.10",
+    requirements_lock = "//tests/simple_flow:requirements_lock_3_10.txt",
+)
+use_repo(pip, "pip")
+
+# Test container repositories
+test_repos = use_extension("//minidock/remote_tools:extensions.bzl", "test_repos", dev_dependency = True)
+use_repo(test_repos, "bazel_320")
+
+# Register the toolchain extension
+minidock_tools = use_extension("//minidock/remote_tools:extensions.bzl", "minidock_tools")
+use_repo(
+    minidock_tools,
+    "rules_minidock__merge_app_linux_x86_64",
+    "rules_minidock__merge_app_macos_aarch64",
+    "rules_minidock__merge_app_macos_x86_64",
+    "rules_minidock__puller_app",
+    "rules_minidock__pusher_app_linux_x86_64",
+    "rules_minidock__pusher_app_macos_aarch64",
+    "rules_minidock__pusher_app_macos_x86_64",
+)

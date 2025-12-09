@@ -3,6 +3,36 @@
 
 These rules may not be suitable for you, they are not setup/designed to cover a huge set of use cases. Pull requests to add new features, especially those well factored to keep the core small will be accepted. For a far more broad set of support, and if in doubt, generally use: https://github.com/bazelbuild/rules_docker
 
+## Setup
+
+**Note:** This repository requires Bazel 6.0+ with Bzlmod enabled.
+
+Add the following to your `MODULE.bazel` file:
+
+```python
+bazel_dep(name = "rules_minidock", version = "0.1.0")
+
+# Use git_override since rules_minidock is not published to the Bazel registry
+git_override(
+    module_name = "rules_minidock",
+    remote = "https://github.com/bazeltools/rules_minidock",
+    commit = "<git_commit>",
+)
+
+# Load the minidock tools extension from extensions.bzl
+minidock_tools = use_extension("@rules_minidock//minidock/remote_tools:extensions.bzl", "minidock_tools")
+use_repo(
+    minidock_tools,
+    "rules_minidock__merge_app_linux_x86_64",
+    "rules_minidock__merge_app_macos_aarch64",
+    "rules_minidock__merge_app_macos_x86_64",
+    "rules_minidock__puller_app",
+    "rules_minidock__pusher_app_linux_x86_64",
+    "rules_minidock__pusher_app_macos_aarch64",
+    "rules_minidock__pusher_app_macos_x86_64",
+)
+```
+
 
 ### Why these rules?
 Less dependencies, there is no need of any other support java/go/rust to use these rules. All tools are pre-built in the `rules_minidock_tools` repo, and are supplied for a few platforms. Generally if these tools don't meet your needs, we aim to have these rules setup so that it should be easy and reasonable to swap out these tools for others as you see fit. That is, primary tooling covers:

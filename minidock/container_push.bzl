@@ -1,4 +1,4 @@
-load("@com_github_bazeltools_rules_minidock//minidock:providers.bzl", "AssembledData")
+load("@rules_minidock//minidock:providers.bzl", "AssembledData")
 
 
 launcher_template = """
@@ -143,7 +143,7 @@ container_push = rule(
             doc = "The label of the file with tag values, added to tag. Can use multiple tags separated by , or whitespace",
         ),
         "pusher": attr.label(
-            default = "@com_github_bazeltools_rules_minidock//minidock/remote_tools:pusher_app",
+            default = "@rules_minidock//minidock/remote_tools:pusher_app",
             cfg = "exec",
             executable = True,
             allow_files = True,

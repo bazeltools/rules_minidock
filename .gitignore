@@ -1,4 +1,4 @@
 bazel-*
 .ijwb
 .idea/
-
+.vscode/
