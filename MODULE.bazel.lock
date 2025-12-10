@@ -148,7 +148,7 @@
     "//minidock:external_container_repo.bzl%external_container_repo": {
       "general": {
         "bzlTransitiveDigest": "YFvDa9acSv1MKv5XYlLDydO2b/p2L72Kua19UfuhfHQ=",
-        "usagesDigest": "4byHMPmH+zyDSikDOlZa9outvynLjlGGN1V7qu3pxUg=",
+        "usagesDigest": "+S/mN7rkkfMDnGzueoSUUBiIWY5fOGPX1O5cLE6rzfQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
