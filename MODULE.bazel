@@ -31,18 +31,11 @@ pip.parse(
 use_repo(pip, "pip")
 
 # Test container repositories
-test_repos = use_extension("//minidock/remote_tools:extensions.bzl", "test_repos", dev_dependency = True)
-use_repo(test_repos, "bazel_320")
-
-# Register the toolchain extension
-minidock_tools = use_extension("//minidock/remote_tools:extensions.bzl", "minidock_tools")
-use_repo(
-    minidock_tools,
-    "rules_minidock__merge_app_linux_x86_64",
-    "rules_minidock__merge_app_macos_aarch64",
-    "rules_minidock__merge_app_macos_x86_64",
-    "rules_minidock__puller_app",
-    "rules_minidock__pusher_app_linux_x86_64",
-    "rules_minidock__pusher_app_macos_aarch64",
-    "rules_minidock__pusher_app_macos_x86_64",
+external_containers = use_extension("//minidock:external_container_repo.bzl", "external_container_repo", dev_dependency = True)
+external_containers.container(
+    name = "bazel_320",
+    digest = "sha256:08434856d8196632b936dd082b8e03bae0b41346299aedf60a0d481ab427a69f",
+    registry = "gcr.io",
+    repository = "bazel-public/bazel",
 )
+use_repo(external_containers, "bazel_320")

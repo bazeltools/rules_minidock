@@ -33,21 +33,13 @@ config_setting(
 
 alias(
     name = "merge_app",
-    actual = select({
-        ":macos_x86": "@rules_minidock__merge_app_macos_x86_64//:bin",
-        ":macos_arm64": "@rules_minidock__merge_app_macos_aarch64//:bin",
-        ":linux_x86": "@rules_minidock__merge_app_linux_x86_64//:bin",
-    }),
+    actual = "@multitool//tools/merge-app:merge-app",
     visibility = ["//visibility:public"],
 )
 
 
 alias(
     name = "pusher_app",
-    actual = select({
-        ":macos_x86": "@rules_minidock__pusher_app_macos_x86_64//:bin",
-        ":macos_arm64": "@rules_minidock__pusher_app_macos_aarch64//:bin",
-        ":linux_x86": "@rules_minidock__pusher_app_linux_x86_64//:bin",
-    }),
+    actual = "@multitool//tools/pusher-app:pusher-app",
     visibility = ["//visibility:public"],
 )
