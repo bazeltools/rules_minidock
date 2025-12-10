@@ -9,6 +9,12 @@ module(
 # Required dependencies
 bazel_dep(name = "platforms", version = "0.0.11")
 
+bazel_dep(name = "rules_multitool", version = "1.11.1")
+
+multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")
+multitool.hub(lockfile = "//minidock/remote_tools:multitool.lock.json")
+use_repo(multitool, "multitool")
+
 # Test dependencies
 bazel_dep(name = "rules_python", version = "0.40.0", dev_dependency = True)
 

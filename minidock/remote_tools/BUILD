@@ -1,3 +1,5 @@
+exports_files(["multitool.lock.json"], visibility = ["//visibility:public"])
+
 config_setting(
     name = "macos_x86",
     constraint_values = [
