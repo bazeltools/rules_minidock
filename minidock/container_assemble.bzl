@@ -83,7 +83,7 @@ container_assemble = rule(
             doc = "The label of the image to push.",
         ),
         "merger": attr.label(
-            default = "@multitool//tools/merge-app:merge-app",
+            default = "@multitool//tools/merge-app",
             cfg = "exec",
             executable = True,
         ),

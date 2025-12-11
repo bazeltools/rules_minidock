@@ -18,19 +18,6 @@ git_override(
     remote = "https://github.com/bazeltools/rules_minidock",
     commit = "<git_commit>",
 )
-
-# Load the minidock tools extension from extensions.bzl
-minidock_tools = use_extension("@rules_minidock//minidock/remote_tools:extensions.bzl", "minidock_tools")
-use_repo(
-    minidock_tools,
-    "rules_minidock__merge_app_linux_x86_64",
-    "rules_minidock__merge_app_macos_aarch64",
-    "rules_minidock__merge_app_macos_x86_64",
-    "rules_minidock__puller_app",
-    "rules_minidock__pusher_app_linux_x86_64",
-    "rules_minidock__pusher_app_macos_aarch64",
-    "rules_minidock__pusher_app_macos_x86_64",
-)
 ```
 
 
@@ -64,7 +51,31 @@ While a lot of the code here has been rewritten for this narrower use case, some
 The dependency configuration in these rules to align containers vs bazel,  has the caveat that overrides occur in the depset order. So the depset of actions will be linearized, and then applied as a stack. With the special carve out that we will only apply one `base` configuration, so we find that first, and apply everything ontop of it.
 
 ## external_container_repo
-This is the entry point for declaring an external repo, it will fetch the metadata about a remote registry
+Fetches metadata about containers from a remote registry. Declare external containers in your `MODULE.bazel`:
+
+```python
+external_containers = use_extension("@rules_minidock//minidock:external_container_repo.bzl", "external_container_repo")
+
+external_containers.container(
+    name = "base_image",
+    digest = "sha256:abcd1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+    registry = "docker.io",
+    repository = "library/alpine",
+)
+
+external_containers.container(
+    name = "app_base",
+    digest = "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    registry = "gcr.io",
+    repository = "my-project/base-image",
+)
+
+use_repo(
+    external_containers,
+    "base_image",
+    "app_base",
+)
+```
 
 
 ## container_config

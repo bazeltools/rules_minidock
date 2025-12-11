@@ -30,16 +30,3 @@ config_setting(
         "@platforms//cpu:x86_64",
     ],
 )
-
-alias(
-    name = "merge_app",
-    actual = "@multitool//tools/merge-app:merge-app",
-    visibility = ["//visibility:public"],
-)
-
-
-alias(
-    name = "pusher_app",
-    actual = "@multitool//tools/pusher-app:pusher-app",
-    visibility = ["//visibility:public"],
-)
