@@ -18,21 +18,17 @@ git_override(
     remote = "https://github.com/bazeltools/rules_minidock",
     commit = "<git_commit>",
 )
-
-# Load the minidock tools extension from extensions.bzl
-minidock_tools = use_extension("@rules_minidock//minidock/remote_tools:extensions.bzl", "minidock_tools")
-use_repo(
-    minidock_tools,
-    "rules_minidock__merge_app_linux_x86_64",
-    "rules_minidock__merge_app_macos_aarch64",
-    "rules_minidock__merge_app_macos_x86_64",
-    "rules_minidock__puller_app",
-    "rules_minidock__pusher_app_linux_x86_64",
-    "rules_minidock__pusher_app_macos_aarch64",
-    "rules_minidock__pusher_app_macos_x86_64",
-)
 ```
 
+### Updating Tools
+
+To update the multitool binaries (merge-app, pusher-app, puller-app) to a new version:
+
+```bash
+./minidock/remote_tools/update_multitool_remote_tools.sh
+```
+
+This updates `minidock/remote_tools/multitool.lock.json` with the latest tool versions.
 
 ### Why these rules?
 Less dependencies, there is no need of any other support java/go/rust to use these rules. All tools are pre-built in the `rules_minidock_tools` repo, and are supplied for a few platforms. Generally if these tools don't meet your needs, we aim to have these rules setup so that it should be easy and reasonable to swap out these tools for others as you see fit. That is, primary tooling covers:
@@ -64,7 +60,31 @@ While a lot of the code here has been rewritten for this narrower use case, some
 The dependency configuration in these rules to align containers vs bazel,  has the caveat that overrides occur in the depset order. So the depset of actions will be linearized, and then applied as a stack. With the special carve out that we will only apply one `base` configuration, so we find that first, and apply everything ontop of it.
 
 ## external_container_repo
-This is the entry point for declaring an external repo, it will fetch the metadata about a remote registry
+Fetches metadata about containers from a remote registry. Declare external containers in your `MODULE.bazel`:
+
+```python
+external_containers = use_extension("@rules_minidock//minidock:external_container_repo.bzl", "external_container_repo")
+
+external_containers.container(
+    name = "base_image",
+    digest = "sha256:abcd1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+    registry = "docker.io",
+    repository = "library/alpine",
+)
+
+external_containers.container(
+    name = "app_base",
+    digest = "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    registry = "gcr.io",
+    repository = "my-project/base-image",
+)
+
+use_repo(
+    external_containers,
+    "base_image",
+    "app_base",
+)
+```
 
 
 ## container_config

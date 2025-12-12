@@ -143,7 +143,7 @@ container_push = rule(
             doc = "The label of the file with tag values, added to tag. Can use multiple tags separated by , or whitespace",
         ),
         "pusher": attr.label(
-            default = "@rules_minidock//minidock/remote_tools:pusher_app",
+            default = "@multitool//tools/pusher-app",
             cfg = "exec",
             executable = True,
             allow_files = True,
