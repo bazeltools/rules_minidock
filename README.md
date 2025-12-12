@@ -20,6 +20,15 @@ git_override(
 )
 ```
 
+### Updating Tools
+
+To update the multitool binaries (merge-app, pusher-app, puller-app) to a new version:
+
+```bash
+./minidock/remote_tools/update_multitool_remote_tools.sh
+```
+
+This updates `minidock/remote_tools/multitool.lock.json` with the latest tool versions.
 
 ### Why these rules?
 Less dependencies, there is no need of any other support java/go/rust to use these rules. All tools are pre-built in the `rules_minidock_tools` repo, and are supplied for a few platforms. Generally if these tools don't meet your needs, we aim to have these rules setup so that it should be easy and reasonable to swap out these tools for others as you see fit. That is, primary tooling covers:
