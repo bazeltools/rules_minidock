@@ -8,7 +8,7 @@ module(
 
 # Required dependencies
 bazel_dep(name = "platforms", version = "0.0.11")
-
+bazel_dep(name = "zstd", version = "1.5.7")
 bazel_dep(name = "rules_multitool", version = "1.11.1")
 
 multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")

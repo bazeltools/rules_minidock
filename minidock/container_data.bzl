@@ -115,11 +115,12 @@ def __container_data_impl(
     args.add(ctx.attr.zstd_compression_level, format = "--zstd_compression_level=%s")
     args.add(compression, format = "--compression=%s")
     args.add(ctx.attr.mtime, format = "--mtime=%s")
+    args.add(ctx.executable._zstd_tool.path, format = "--zstd_path=%s")
 
     ctx.actions.run(
         executable = ctx.executable._build_tar,
         arguments = [args],
-        inputs = ctx.files.tars + [manifest_file] + files,
+        inputs = ctx.files.tars + [manifest_file] + files + [ctx.executable._zstd_tool],
         outputs = [layer],
         use_default_shell_env = True,
         mnemonic = "ContainerData",
@@ -143,6 +144,12 @@ container_data = rule(
             default = Label("//minidock/container_data_tools:build_tar"),
             cfg = "exec",
             executable = True,
+        ),
+        "_zstd_tool": attr.label(
+            default = Label("@zstd//:zstd_cli"),
+            cfg = "exec",
+            executable = True,
+            allow_single_file = True,
         ),
         "data_path": attr.string(
             doc = """Root path of the files.
