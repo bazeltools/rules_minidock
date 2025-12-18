@@ -47,6 +47,7 @@ class TarFileWriter(object):
                compression='',
                gzip_compression_level=9,
                zstd_compression_level=3,
+               zstd_path='zstd',
                root_directory='./',
                default_mtime=None,
                preserve_tar_mtimes=True):
@@ -56,6 +57,7 @@ class TarFileWriter(object):
       compression: compression type: bzip2, bz2, gz, tgz, xz, lzma, zstd.
       gzip_compression_level: compression level for gzip (1-9).
       zstd_compression_level: compression level for zstd (1-22).
+      zstd_path: path to the zstd executable.
       root_directory: virtual root to prepend to elements in the archive.
       default_mtime: default mtime to use for elements in the archive.
           May be an integer or the value 'portable' to use the date
@@ -72,6 +74,7 @@ class TarFileWriter(object):
     # Support zstd compression through zstd command line tool
     self.zstd = compression == 'zstd'
     self.zstd_compression_level = zstd_compression_level
+    self.zstd_path = zstd_path
     self.name = name
     self.root_directory = root_directory.rstrip('/')
     self.preserve_mtime = preserve_tar_mtimes
@@ -320,10 +323,10 @@ class TarFileWriter(object):
       # Note that we buffer the file in memory and it can have an important
       # memory footprint but it's probably fine as we don't use them for really
       # large files.
-      if subprocess.call('which zstd', shell=True, stdout=subprocess.PIPE):
+      if not os.path.exists(self.zstd_path):
         raise self.Error('Cannot handle .zstd compression: '
-                         'zstd command not found.')
-      p = subprocess.Popen('zstd -dc %s' % tar,
+                         'zstd command not found at %s.' % self.zstd_path)
+      p = subprocess.Popen('%s -dc %s' % (self.zstd_path, tar),
                            shell=True,
                            stdout=subprocess.PIPE)
       f = io.BytesIO(p.stdout.read())
@@ -405,12 +408,12 @@ class TarFileWriter(object):
     if self.zstd:
       # Support zstd compression through zstd command line tool
       # Following same pattern as xz to maintain no-external-dependencies principle
-      if subprocess.call('which zstd', shell=True, stdout=subprocess.PIPE):
+      if not os.path.exists(self.zstd_path):
         raise self.Error('Cannot handle .zstd compression: '
-                         'zstd command not found.')
+                         'zstd command not found at %s.' % self.zstd_path)
       subprocess.call(
-          'mv {0} {0}.d && zstd -z -{1} {0}.d && mv {0}.d.zst {0}'.format(
-              self.name, self.zstd_compression_level),
+          'mv {0} {0}.d && {2} -z -{1} {0}.d && mv {0}.d.zst {0}'.format(
+              self.name, self.zstd_compression_level, self.zstd_path),
           shell=True,
           stdout=subprocess.PIPE)
     
@@ -446,12 +449,13 @@ class TarFile(object):
 
   def __init__(self, output, directory, root_directory,
                default_mtime, enable_mtime_preservation,
-               force_posixpath, gzip_compression_level, zstd_compression_level=3, compression='gz'):
+               force_posixpath, gzip_compression_level, zstd_compression_level=3, zstd_path='zstd', compression='gz'):
     self.directory = directory
     self.output = output
     self.compression = compression
     self.gzip_compression_level = gzip_compression_level
     self.zstd_compression_level = zstd_compression_level
+    self.zstd_path = zstd_path
     self.root_directory = root_directory
     self.default_mtime = default_mtime
     self.enable_mtime_preservation = enable_mtime_preservation
@@ -463,6 +467,7 @@ class TarFile(object):
         self.compression,
         self.gzip_compression_level,
         self.zstd_compression_level,
+        self.zstd_path,
         self.root_directory,
         self.default_mtime,
         self.enable_mtime_preservation,
@@ -717,7 +722,7 @@ def main(FLAGS):
                FLAGS.root_directory, FLAGS.mtime,
                FLAGS.enable_mtime_preservation,
                FLAGS.force_posixpath, FLAGS.gzip_compression_level,
-               FLAGS.zstd_compression_level, FLAGS.compression) as output:
+               FLAGS.zstd_compression_level, FLAGS.zstd_path, FLAGS.compression) as output:
     def file_attributes(filename):
       if filename.startswith('/'):
         filename = filename[1:]
@@ -830,6 +835,9 @@ if __name__ == '__main__':
 
   parser.add_argument('--zstd_compression_level', type=int, default=3,
     help='Set the zstd compression level to use (1-22).')
+
+  parser.add_argument('--zstd_path', type=str, default='zstd',
+    help='Path to the zstd executable.')
 
   parser.add_argument('--compression', type=str, default='gz',
     help='Set the compression type: gz, bz2, xz, lzma, zstd, or empty string for no compression.')
