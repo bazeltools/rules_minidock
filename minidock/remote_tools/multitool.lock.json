@@ -4,22 +4,22 @@
     "binaries": [
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/merge-app-linux-x86_64",
-        "sha256": "9fbe9c8b83d4a3f697507eb7ee1de0d06595b65a721d710eba9859b54f3e7e8e",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/merge-app-linux-x86_64",
+        "sha256": "1331c0d7f27ec6521d1426dc5c23cc2c2109225e47ef47b5b133e7791f3ee4e0",
         "os": "linux",
         "cpu": "x86_64"
       },
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/merge-app-macos-aarch64",
-        "sha256": "f8bd409a968096c3cae842405f45fe2d9d64e14a233d7d941f9adf2ea01b908f",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/merge-app-macos-aarch64",
+        "sha256": "f88813943b538c5da053378ca953a901183a0c2dca827a9e9308cedd9e9385f7",
         "os": "macos",
         "cpu": "arm64"
       },
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/merge-app-macos-x86_64",
-        "sha256": "ee506282882765ae9e5c422fd38b0657f5bd34671a8ff8a9c9fd9d043d8059b2",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/merge-app-macos-x86_64",
+        "sha256": "1b83d92158bd24489b4b65c961c5198ce6b94cfa3a5ef05d99474c831a7c93ae",
         "os": "macos",
         "cpu": "x86_64"
       }
@@ -49,22 +49,22 @@
     "binaries": [
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/puller-app-linux-x86_64",
-        "sha256": "0af36c23ed15ee3226e66b2b048b46f94934d309dc2b5d6aa52b8a84bee0eaec",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/puller-app-linux-x86_64",
+        "sha256": "f42a0327965f1f0b5d67e385becd588a3cb3dc569918f1f664af219872bd3293",
         "os": "linux",
         "cpu": "x86_64"
       },
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/puller-app-macos-aarch64",
-        "sha256": "73782ee562a5035f28bb14cff704fda361ef31c6d6fa17f50366b70ff20105e3",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/puller-app-macos-aarch64",
+        "sha256": "3e95ff6eb9f1c1eac7c73e794c9952126c4e68c66b1b84c073ac65dcc543e6a7",
         "os": "macos",
         "cpu": "arm64"
       },
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/puller-app-macos-x86_64",
-        "sha256": "cc2cd9913b71a86b2f7c829c34b44a25e437c421313e9ff2f178824f90851c5e",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/puller-app-macos-x86_64",
+        "sha256": "cdaf976bec4276373b0e329af602a45e880269fd37093a5fefdb0964e42ac235",
         "os": "macos",
         "cpu": "x86_64"
       }
@@ -74,22 +74,22 @@
     "binaries": [
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/pusher-app-linux-x86_64",
-        "sha256": "d0cad46baac9f14b04b8fe52ad71ed2746bef0cbcea07ae055721a067d3792c2",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/pusher-app-linux-x86_64",
+        "sha256": "18d9771dace76a3110282ce6c8c030b1c156af160bbcabd15abf65f6d69e9da6",
         "os": "linux",
         "cpu": "x86_64"
       },
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/pusher-app-macos-aarch64",
-        "sha256": "6eed20cdfaec70cf25286088bdaa30ce4b1faf429a8b509804357be37938daeb",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/pusher-app-macos-aarch64",
+        "sha256": "b211f9d047989e5a3449314851cdddbcd62dfa225cb78e5e5d18e580a9abd9b5",
         "os": "macos",
         "cpu": "arm64"
       },
       {
         "kind": "file",
-        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.76/pusher-app-macos-x86_64",
-        "sha256": "b1a92a9a12d65ea313fcd9539a9183a90f3e7e673eb5c5043da48b34f87e2177",
+        "url": "https://github.com/bazeltools/rules_minidock_tools/releases/download/v0.0.77/pusher-app-macos-x86_64",
+        "sha256": "19cefed9d4e796a575080dd23b224dd07f2c16f8b22393bc78c2096bec048369",
         "os": "macos",
         "cpu": "x86_64"
       }
