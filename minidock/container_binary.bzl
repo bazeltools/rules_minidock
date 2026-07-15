@@ -6,6 +6,10 @@ load(
     "@rules_minidock//minidock:container_compose.bzl",
     "container_compose",
 )
+load(
+    "@rules_java//java/common:java_common.bzl",
+    "java_common",
+)
 
 GROUP_COUNT = 15
 
